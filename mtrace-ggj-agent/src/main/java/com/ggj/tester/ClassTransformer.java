@@ -8,16 +8,30 @@ import org.objectweb.asm.tree.*;
 import java.io.*;
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
+import java.security.CodeSource;
 import java.security.ProtectionDomain;
 import java.util.ListIterator;
 
 public class ClassTransformer implements ClassFileTransformer {
     private static final String AGENT_PREFIX;
+    private final WildcardMatcher includes;
+    private final WildcardMatcher excludes;
+    private final WildcardMatcher exclClassloader;
+    private final boolean inclBootstrapClasses;
+    private final boolean inclNoLocationClasses;
     private Logger log = new TraceLogger();
 
     static {
         final String name = ClassTransformer.class.getName();
         AGENT_PREFIX = toVMName(name.substring(0, name.lastIndexOf('.')));
+    }
+
+    public ClassTransformer(final AgentOptions options) {
+        includes = new WildcardMatcher(toVMName(options.getIncludes()));
+        excludes = new WildcardMatcher(toVMName(options.getExcludes()));
+        exclClassloader = new WildcardMatcher(options.getExclClassloader());
+        inclBootstrapClasses = options.getInclBootstrapClasses();
+        inclNoLocationClasses = options.getInclNoLocationClasses();
     }
 
     public int traceID = 0;
@@ -30,9 +44,8 @@ public class ClassTransformer implements ClassFileTransformer {
             ProtectionDomain protectionDomain, //保护域
             byte[] classfileBuffer //原字节码
     ) throws IllegalClassFormatException {
-
+        if (!filter(loader, className, protectionDomain)) return null;
         long TraceId = 11111;
-
         try {
             // 重定向标准输出和错误输出到文件
             String traceFile = "/Users/changfeng/work/code/MTrace/out/artifacts/mtrace/trace.log";
@@ -42,7 +55,7 @@ public class ClassTransformer implements ClassFileTransformer {
             System.setErr(printStream);
 
             //ASM-Core API
-            if (1 == 1) {
+            if (1 == 11) {
                 ClassReader cr = new ClassReader(classfileBuffer);
                 ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
                 ClassVisitor cv = new ClassAdapter(cw);
@@ -51,11 +64,10 @@ public class ClassTransformer implements ClassFileTransformer {
             }
 
             //ASM-Tree API
-            if (2 == 22) {
+            if (2 == 2) {
                 ClassReader cr = new ClassReader(classfileBuffer);
                 ClassNode cn = new ClassNode();
                 cr.accept(cn, 0);
-                ClassWriter cw = new ClassWriter(0);
 
                 for (MethodNode md : cn.methods) {
                     if ("<init>".endsWith(md.name) || "<clinit>".equals(md.name)) continue;
@@ -74,6 +86,8 @@ public class ClassTransformer implements ClassFileTransformer {
                     insnList.insert(insnList.getLast().getPrevious(), endData);//在调用方法的最后插入埋点
                     md.maxStack += 3;
                 }
+
+                ClassWriter cw = new ClassWriter(0);
                 cn.accept(cw);
                 return cw.toByteArray();
             }
@@ -83,7 +97,6 @@ public class ClassTransformer implements ClassFileTransformer {
                 ClassReader cr = new ClassReader(classfileBuffer);
                 ClassNode cn = new ClassNode();
                 cr.accept(cn, 0);
-                ClassWriter cw = new ClassWriter(0);
                 for (MethodNode mn : cn.methods) {
                     if ("<init>".endsWith(mn.name) || "<clinit>".equals(mn.name)) continue;
                     InsnList instructions = mn.instructions;
@@ -96,6 +109,8 @@ public class ClassTransformer implements ClassFileTransformer {
                         }
                     }
                 }
+
+                ClassWriter cw = new ClassWriter(0);
                 cn.accept(cw);
                 return cw.toByteArray();
             }
@@ -104,17 +119,27 @@ public class ClassTransformer implements ClassFileTransformer {
             // InstructionList instructionList = new InstructionList();
             // instructionList.append();
         } catch (Exception e) {
-//                e.printStackTrace();
+            e.printStackTrace();
         }
-
         return classfileBuffer;
     }
 
-    boolean filter(final ClassLoader loader, final String className) {
+    boolean filter(final ClassLoader loader, final String classname, final ProtectionDomain protectionDomain) {
         if (loader == null) {
-            return false;
+            if (!inclBootstrapClasses) return false;
+        } else {
+            if (!inclNoLocationClasses && !hasSourceLocation(protectionDomain)) return false;
+            if (exclClassloader.matches(loader.getClass().getName())) return false;
         }
-        return !className.startsWith(AGENT_PREFIX);
+        return !classname.startsWith(AGENT_PREFIX) && includes.matches(classname) && !excludes.matches(classname);
+    }
+
+    private boolean hasSourceLocation(final ProtectionDomain protectionDomain) {
+        if (protectionDomain == null) return false;
+
+        final CodeSource codeSource = protectionDomain.getCodeSource();
+        if (codeSource == null) return false;
+        return codeSource.getLocation() != null;
     }
 
     private static String toVMName(final String srcName) {
