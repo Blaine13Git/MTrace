@@ -12,6 +12,8 @@ import java.security.CodeSource;
 import java.security.ProtectionDomain;
 import java.util.ListIterator;
 
+import static org.objectweb.asm.Opcodes.ASM7;
+
 public class ClassTransformer implements ClassFileTransformer {
     private static final String AGENT_PREFIX;
     private final WildcardMatcher includes;
@@ -20,6 +22,7 @@ public class ClassTransformer implements ClassFileTransformer {
     private final boolean inclBootstrapClasses;
     private final boolean inclNoLocationClasses;
     private Logger log = new TraceLogger();
+    long TraceId = 1;
 
     static {
         final String name = ClassTransformer.class.getName();
@@ -44,8 +47,10 @@ public class ClassTransformer implements ClassFileTransformer {
             ProtectionDomain protectionDomain, //保护域
             byte[] classfileBuffer //原字节码
     ) throws IllegalClassFormatException {
+
+        //过滤
         if (!filter(loader, className, protectionDomain)) return null;
-        long TraceId = 11111;
+
         try {
             // 重定向标准输出和错误输出到文件
             String traceFile = "/Users/changfeng/work/code/MTrace/out/artifacts/mtrace/trace.log";
@@ -66,7 +71,7 @@ public class ClassTransformer implements ClassFileTransformer {
             //ASM-Tree API
             if (2 == 2) {
                 ClassReader cr = new ClassReader(classfileBuffer);
-                ClassNode cn = new ClassNode();
+                ClassNode cn = new ClassNode(ASM7);
                 cr.accept(cn, 0);
 
                 for (MethodNode md : cn.methods) {
