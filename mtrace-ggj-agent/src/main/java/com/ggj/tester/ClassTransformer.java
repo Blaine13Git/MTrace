@@ -10,6 +10,7 @@ import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
 import java.security.CodeSource;
 import java.security.ProtectionDomain;
+import java.util.Arrays;
 import java.util.ListIterator;
 
 import static org.objectweb.asm.Opcodes.ASM7;
@@ -74,22 +75,26 @@ public class ClassTransformer implements ClassFileTransformer {
                 ClassNode cn = new ClassNode(ASM7);
                 cr.accept(cn, 0);
 
-                for (MethodNode md : cn.methods) {
-                    if ("<init>".endsWith(md.name) || "<clinit>".equals(md.name)) continue;
-                    InsnList insnList = md.instructions;
+                for (MethodNode mn : cn.methods) {
+                    if ("<init>".endsWith(mn.name) || "<clinit>".equals(mn.name)) continue;
+
+                    InsnList insnList = mn.instructions;
+
+                    if (insnList.size() == 0) continue;
+
                     InsnList insertAtHead = new InsnList();
                     insertAtHead.add(new FieldInsnNode(Opcodes.GETSTATIC, "java/lang/System", "out", "Ljava/io/PrintStream;"));
-                    insertAtHead.add(new LdcInsnNode(TraceId + "--Call Method-> " + cn.name + "." + md.name));
+                    insertAtHead.add(new LdcInsnNode(TraceId + "--Call Method-> " + cn.name + "." + mn.name));
                     insertAtHead.add(new MethodInsnNode(Opcodes.INVOKEVIRTUAL, "java/io/PrintStream", "println", "(Ljava/lang/String;)V"));
                     insnList.insert(insertAtHead);//在调用方法的头部插入埋点
-                    md.maxStack += 3;
+                    mn.maxStack += 3;
 
                     InsnList endData = new InsnList();
                     endData.add(new FieldInsnNode(Opcodes.GETSTATIC, "java/lang/System", "out", "Ljava/io/PrintStream;"));
-                    endData.add(new LdcInsnNode(TraceId + "--Return Method-> " + cn.name + "." + md.name));
+                    endData.add(new LdcInsnNode(TraceId + "--Return Method-> " + cn.name + "." + mn.name));
                     endData.add(new MethodInsnNode(Opcodes.INVOKEVIRTUAL, "java/io/PrintStream", "println", "(Ljava/lang/String;)V"));
                     insnList.insert(insnList.getLast().getPrevious(), endData);//在调用方法的最后插入埋点
-                    md.maxStack += 3;
+                    mn.maxStack += 3;
                 }
 
                 ClassWriter cw = new ClassWriter(0);
@@ -129,14 +134,14 @@ public class ClassTransformer implements ClassFileTransformer {
         return classfileBuffer;
     }
 
-    boolean filter(final ClassLoader loader, final String classname, final ProtectionDomain protectionDomain) {
+    boolean filter(final ClassLoader loader, final String className, final ProtectionDomain protectionDomain) {
         if (loader == null) {
             if (!inclBootstrapClasses) return false;
         } else {
             if (!inclNoLocationClasses && !hasSourceLocation(protectionDomain)) return false;
             if (exclClassloader.matches(loader.getClass().getName())) return false;
         }
-        return !classname.startsWith(AGENT_PREFIX) && includes.matches(classname) && !excludes.matches(classname);
+        return !className.startsWith(AGENT_PREFIX) && includes.matches(className) && !excludes.matches(className);
     }
 
     private boolean hasSourceLocation(final ProtectionDomain protectionDomain) {
