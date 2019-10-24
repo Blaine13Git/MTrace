@@ -1,31 +1,13 @@
 package com.ggj.tester;
 
-public class TestMain {
-    private static String AGENT_PREFIX;
+public abstract class TestMain {
 
-    //
     public static void main(String[] args) {
-
-        String projectDir = System.getProperty("user.dir");
-        System.out.println("projectDir:" + projectDir);
-
-        String projectName = projectDir.substring(projectDir.lastIndexOf("/") + 1);
-        System.out.println("projectName:" + projectName);
-
-        System.out.println("packageName:" + TestMain.class.getPackage().getName());
-
-        System.out.println("path:" + TestMain.class.getResource("").getPath());
-
-        final String name = TestMain.class.getName();
-        System.out.println(name);
-        AGENT_PREFIX = toVMName(name.substring(0, name.lastIndexOf('.')));
-        System.out.println(AGENT_PREFIX);
-
+        System.out.println("for testing ……");
+        case01();
     }
 
-    //
-    private static String toVMName(final String srcName) {
-        return srcName.replace('.', '/');
+    public static void case01(){
+        System.out.println("case01");
     }
-
 }

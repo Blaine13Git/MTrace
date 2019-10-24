@@ -1,17 +1,18 @@
 package com.ggj.tester;
 
-import com.sun.org.apache.bcel.internal.generic.InstructionList;
 import jdk.internal.instrumentation.Logger;
-import org.objectweb.asm.*;
+import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.ClassVisitor;
+import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.*;
 
-import java.io.*;
+import java.io.FileOutputStream;
+import java.io.PrintStream;
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
 import java.security.CodeSource;
 import java.security.ProtectionDomain;
-import java.util.Arrays;
-import java.util.ListIterator;
 
 import static org.objectweb.asm.Opcodes.ASM7;
 
@@ -49,90 +50,95 @@ public class ClassTransformer implements ClassFileTransformer {
             byte[] classfileBuffer //原字节码
     ) throws IllegalClassFormatException {
 
-        //过滤
+        if (classBeingRedefined != null) {
+            return null;
+        }
+
+        // 重定向输出到指定文件
+        String traceFile = "/Users/changfeng/work/code/MTrace/out/artifacts/mtrace/trace.log";
+        redirectOutPut(traceFile);
+
+        // 基本过滤
         if (!filter(loader, className, protectionDomain)) return null;
 
+        // 指定过滤
+//        if (className.replace("/", ".").contains("com.ggj.trade.consign")) return null;
+
+        // 调用字节码插入
+        return callASMTreeApi(classfileBuffer);
+
+    }
+
+    /**
+     * 调用 ASM Core API
+     *
+     * @param classfileBuffer
+     * @return
+     */
+    private byte[] callAsmCoreApi(byte[] classfileBuffer) {
+        ClassReader cr = new ClassReader(classfileBuffer);
+        ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
+        ClassVisitor cv = new ClassAdapter(cw);
+        cr.accept(cv, 0);
+        return cw.toByteArray();
+    }
+
+    /**
+     * 调用 ASM-Tree API
+     *
+     * @param classfileBuffer
+     * @return
+     */
+    public byte[] callASMTreeApi(byte[] classfileBuffer) {
+        ClassReader cr = new ClassReader(classfileBuffer);
+        ClassNode cn = new ClassNode(ASM7);
+        cr.accept(cn, 0);
+
+        for (MethodNode mn : cn.methods) {
+
+            //过滤类的初始化方法
+            if ("<init>".endsWith(mn.name) || "<clinit>".equals(mn.name)) continue;
+
+            InsnList insnList = mn.instructions;
+
+            if (insnList.size() == 0) continue; //用来过滤抽象方法
+
+            InsnList insertAtHead = new InsnList();
+            insertAtHead.add(new FieldInsnNode(Opcodes.GETSTATIC, "java/lang/System", "out", "Ljava/io/PrintStream;"));
+            insertAtHead.add(new LdcInsnNode(TraceId + "--Call Method-> " + cn.name + "." + mn.name));
+            insertAtHead.add(new MethodInsnNode(Opcodes.INVOKEVIRTUAL, "java/io/PrintStream", "println", "(Ljava/lang/String;)V"));
+            insnList.insert(insertAtHead);//在调用方法的头部插入埋点
+            mn.maxStack += 3;
+
+            InsnList endData = new InsnList();
+            endData.add(new FieldInsnNode(Opcodes.GETSTATIC, "java/lang/System", "out", "Ljava/io/PrintStream;"));
+            endData.add(new LdcInsnNode(TraceId + "--Return Method-> " + cn.name + "." + mn.name));
+            endData.add(new MethodInsnNode(Opcodes.INVOKEVIRTUAL, "java/io/PrintStream", "println", "(Ljava/lang/String;)V"));
+            insnList.insert(insnList.getLast().getPrevious(), endData);//在调用方法的最后插入埋点
+            mn.maxStack += 3;
+        }
+
+        ClassWriter cw = new ClassWriter(0);
+        cn.accept(cw);
+        return cw.toByteArray();
+    }
+
+    /**
+     * 重定向输出
+     *
+     * @param filePath
+     */
+    public void redirectOutPut(String filePath) {
         try {
-            // 重定向标准输出和错误输出到文件
-            String traceFile = "/Users/changfeng/work/code/MTrace/out/artifacts/mtrace/trace.log";
-            FileOutputStream fileOutputStream = new FileOutputStream(traceFile, true);
+            FileOutputStream fileOutputStream = new FileOutputStream(filePath, true);
             PrintStream printStream = new PrintStream(fileOutputStream);
             System.setOut(printStream);
             System.setErr(printStream);
-
-            //ASM-Core API
-            if (1 == 11) {
-                ClassReader cr = new ClassReader(classfileBuffer);
-                ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
-                ClassVisitor cv = new ClassAdapter(cw);
-                cr.accept(cv, 0);
-                return cw.toByteArray();
-            }
-
-            //ASM-Tree API
-            if (2 == 2) {
-                ClassReader cr = new ClassReader(classfileBuffer);
-                ClassNode cn = new ClassNode(ASM7);
-                cr.accept(cn, 0);
-
-                for (MethodNode mn : cn.methods) {
-                    if ("<init>".endsWith(mn.name) || "<clinit>".equals(mn.name)) continue;
-
-                    InsnList insnList = mn.instructions;
-
-                    if (insnList.size() == 0) continue;
-
-                    InsnList insertAtHead = new InsnList();
-                    insertAtHead.add(new FieldInsnNode(Opcodes.GETSTATIC, "java/lang/System", "out", "Ljava/io/PrintStream;"));
-                    insertAtHead.add(new LdcInsnNode(TraceId + "--Call Method-> " + cn.name + "." + mn.name));
-                    insertAtHead.add(new MethodInsnNode(Opcodes.INVOKEVIRTUAL, "java/io/PrintStream", "println", "(Ljava/lang/String;)V"));
-                    insnList.insert(insertAtHead);//在调用方法的头部插入埋点
-                    mn.maxStack += 3;
-
-                    InsnList endData = new InsnList();
-                    endData.add(new FieldInsnNode(Opcodes.GETSTATIC, "java/lang/System", "out", "Ljava/io/PrintStream;"));
-                    endData.add(new LdcInsnNode(TraceId + "--Return Method-> " + cn.name + "." + mn.name));
-                    endData.add(new MethodInsnNode(Opcodes.INVOKEVIRTUAL, "java/io/PrintStream", "println", "(Ljava/lang/String;)V"));
-                    insnList.insert(insnList.getLast().getPrevious(), endData);//在调用方法的最后插入埋点
-                    mn.maxStack += 3;
-                }
-
-                ClassWriter cw = new ClassWriter(0);
-                cn.accept(cw);
-                return cw.toByteArray();
-            }
-
-            //使用ASM-Tree API, opcode的值进行精准插入
-            if (3 == 33) {
-                ClassReader cr = new ClassReader(classfileBuffer);
-                ClassNode cn = new ClassNode();
-                cr.accept(cn, 0);
-                for (MethodNode mn : cn.methods) {
-                    if ("<init>".endsWith(mn.name) || "<clinit>".equals(mn.name)) continue;
-                    InsnList instructions = mn.instructions;
-                    ListIterator<AbstractInsnNode> iterator = instructions.iterator();
-                    while (iterator.hasNext()) {
-                        AbstractInsnNode next = iterator.next();
-                        int opcode = next.getOpcode();
-                        if (opcode == Opcodes.RETURN || opcode == Opcodes.ATHROW) {
-                            //insert code here by yourself，通过javap查看字节码
-                        }
-                    }
-                }
-
-                ClassWriter cw = new ClassWriter(0);
-                cn.accept(cw);
-                return cw.toByteArray();
-            }
-
-            //BCEL API
-            // InstructionList instructionList = new InstructionList();
-            // instructionList.append();
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return classfileBuffer;
     }
+
 
     boolean filter(final ClassLoader loader, final String className, final ProtectionDomain protectionDomain) {
         if (loader == null) {
@@ -157,6 +163,3 @@ public class ClassTransformer implements ClassFileTransformer {
     }
 
 }
-
-
-
