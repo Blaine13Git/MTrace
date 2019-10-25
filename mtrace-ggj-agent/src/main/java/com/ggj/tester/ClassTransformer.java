@@ -1,6 +1,5 @@
 package com.ggj.tester;
 
-import jdk.internal.instrumentation.Logger;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
@@ -13,6 +12,7 @@ import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
 import java.security.CodeSource;
 import java.security.ProtectionDomain;
+import java.util.ArrayList;
 
 import static org.objectweb.asm.Opcodes.ASM7;
 
@@ -23,8 +23,6 @@ public class ClassTransformer implements ClassFileTransformer {
     private final WildcardMatcher exclClassloader;
     private final boolean inclBootstrapClasses;
     private final boolean inclNoLocationClasses;
-    private Logger log = new TraceLogger();
-    long TraceId = 1;
 
     static {
         final String name = ClassTransformer.class.getName();
@@ -38,8 +36,6 @@ public class ClassTransformer implements ClassFileTransformer {
         inclBootstrapClasses = options.getInclBootstrapClasses();
         inclNoLocationClasses = options.getInclNoLocationClasses();
     }
-
-    public int traceID = 0;
 
     @Override
     public byte[] transform(
@@ -61,11 +57,39 @@ public class ClassTransformer implements ClassFileTransformer {
         // 基本过滤
         if (!filter(loader, className, protectionDomain)) return null;
 
-        // 指定过滤
-//        if (className.replace("/", ".").contains("com.ggj.trade.consign")) return null;
+        //过滤内容
+        ArrayList<String> filterData = new ArrayList();
+        filterData.add("com/intellij/");
+        filterData.add("com/beust/");
+        filterData.add("com/alibaba/");
+        filterData.add("com/aliyun/");
+        filterData.add("com/mysql/");
+        filterData.add("com/google/");
+        filterData.add("com/fasterxml/");
+        filterData.add("com/sun/");
+        filterData.add("com/github/");
+        filterData.add("com/ggj/platform/");
+        filterData.add("sun/");
+        filterData.add("org/");
+        filterData.add("ch/");
+        filterData.add("javassist/");
+        filterData.add("io/");
+        filterData.add("springfox/");
+        filterData.add("redis/");
+        filterData.add("javax/");
+        filterData.add("au/");
+        filterData.add("com/ggj/qa/gts/");
+        filterData.add("java/");
+
+        for (int i = 0; i < filterData.size(); i++) {
+            if (className.startsWith(filterData.get(i)) || className.contains("$$")) {
+                return null;
+            }
+        }
 
         // 调用字节码插入
         return callASMTreeApi(classfileBuffer);
+//        return callAsmCoreApi(classfileBuffer);
 
     }
 
@@ -97,25 +121,25 @@ public class ClassTransformer implements ClassFileTransformer {
         for (MethodNode mn : cn.methods) {
 
             //过滤类的初始化方法
-            if ("<init>".endsWith(mn.name) || "<clinit>".equals(mn.name)) continue;
+            if ("<init>".endsWith(mn.name) || "<clinit>".endsWith(mn.name)) continue;
 
             InsnList insnList = mn.instructions;
 
             if (insnList.size() == 0) continue; //用来过滤抽象方法
 
             InsnList insertAtHead = new InsnList();
-            insertAtHead.add(new FieldInsnNode(Opcodes.GETSTATIC, "java/lang/System", "out", "Ljava/io/PrintStream;"));
-            insertAtHead.add(new LdcInsnNode(TraceId + "--Call Method-> " + cn.name + "." + mn.name));
+            insertAtHead.add(new FieldInsnNode(Opcodes.GETSTATIC, "java/lang/System", "err", "Ljava/io/PrintStream;"));
+            insertAtHead.add(new LdcInsnNode("Call Method-> " + cn.name + "." + mn.name));
             insertAtHead.add(new MethodInsnNode(Opcodes.INVOKEVIRTUAL, "java/io/PrintStream", "println", "(Ljava/lang/String;)V"));
             insnList.insert(insertAtHead);//在调用方法的头部插入埋点
-            mn.maxStack += 3;
+//            mn.maxStack += 3;
 
             InsnList endData = new InsnList();
-            endData.add(new FieldInsnNode(Opcodes.GETSTATIC, "java/lang/System", "out", "Ljava/io/PrintStream;"));
-            endData.add(new LdcInsnNode(TraceId + "--Return Method-> " + cn.name + "." + mn.name));
+            endData.add(new FieldInsnNode(Opcodes.GETSTATIC, "java/lang/System", "err", "Ljava/io/PrintStream;"));
+            endData.add(new LdcInsnNode("Return Method-> " + cn.name + "." + mn.name));
             endData.add(new MethodInsnNode(Opcodes.INVOKEVIRTUAL, "java/io/PrintStream", "println", "(Ljava/lang/String;)V"));
             insnList.insert(insnList.getLast().getPrevious(), endData);//在调用方法的最后插入埋点
-            mn.maxStack += 3;
+            mn.maxStack += 6;
         }
 
         ClassWriter cw = new ClassWriter(0);
@@ -132,13 +156,12 @@ public class ClassTransformer implements ClassFileTransformer {
         try {
             FileOutputStream fileOutputStream = new FileOutputStream(filePath, true);
             PrintStream printStream = new PrintStream(fileOutputStream);
-            System.setOut(printStream);
+//            System.setOut(printStream);
             System.setErr(printStream);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
-
 
     boolean filter(final ClassLoader loader, final String className, final ProtectionDomain protectionDomain) {
         if (loader == null) {
