@@ -68,6 +68,7 @@ public class ClassTransformer implements ClassFileTransformer {
         filterData.add("com/fasterxml/");
         filterData.add("com/sun/");
         filterData.add("com/github/");
+        filterData.add("com/zaxxer/");
         filterData.add("com/ggj/platform/");
         filterData.add("sun/");
         filterData.add("org/");
@@ -80,6 +81,8 @@ public class ClassTransformer implements ClassFileTransformer {
         filterData.add("au/");
         filterData.add("com/ggj/qa/gts/");
         filterData.add("java/");
+        filterData.add("rx/");
+        filterData.add("net/");
 
         for (int i = 0; i < filterData.size(); i++) {
             if (className.startsWith(filterData.get(i)) || className.contains("$$")) {
@@ -88,8 +91,8 @@ public class ClassTransformer implements ClassFileTransformer {
         }
 
         // 调用字节码插入
-        return callASMTreeApi(classfileBuffer);
-//        return callAsmCoreApi(classfileBuffer);
+        return callAsmCoreApi(classfileBuffer);
+//        return callASMTreeApi(classfileBuffer);
 
     }
 
@@ -102,6 +105,7 @@ public class ClassTransformer implements ClassFileTransformer {
     private byte[] callAsmCoreApi(byte[] classfileBuffer) {
         ClassReader cr = new ClassReader(classfileBuffer);
         ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
+
         ClassVisitor cv = new ClassAdapter(cw);
         cr.accept(cv, 0);
         return cw.toByteArray();
