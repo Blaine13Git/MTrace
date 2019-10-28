@@ -12,7 +12,6 @@ import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
 import java.security.CodeSource;
 import java.security.ProtectionDomain;
-import java.util.ArrayList;
 
 import static org.objectweb.asm.Opcodes.ASM7;
 
@@ -23,6 +22,9 @@ public class ClassTransformer implements ClassFileTransformer {
     private final WildcardMatcher exclClassloader;
     private final boolean inclBootstrapClasses;
     private final boolean inclNoLocationClasses;
+
+    private final String traceClass;
+    private final String traceMethod;
 
     static {
         final String name = ClassTransformer.class.getName();
@@ -35,6 +37,8 @@ public class ClassTransformer implements ClassFileTransformer {
         exclClassloader = new WildcardMatcher(options.getExclClassloader());
         inclBootstrapClasses = options.getInclBootstrapClasses();
         inclNoLocationClasses = options.getInclNoLocationClasses();
+        traceClass = options.getTraceClass();
+        traceMethod = options.getTraceMethod();
     }
 
     @Override
@@ -57,41 +61,13 @@ public class ClassTransformer implements ClassFileTransformer {
         // 基本过滤
         if (!filter(loader, className, protectionDomain)) return null;
 
-        //过滤内容
-        ArrayList<String> filterData = new ArrayList();
-        filterData.add("com/intellij/");
-        filterData.add("com/beust/");
-        filterData.add("com/alibaba/");
-        filterData.add("com/aliyun/");
-        filterData.add("com/mysql/");
-        filterData.add("com/google/");
-        filterData.add("com/fasterxml/");
-        filterData.add("com/sun/");
-        filterData.add("com/github/");
-        filterData.add("com/zaxxer/");
-        filterData.add("com/ggj/platform/");
-        filterData.add("sun/");
-        filterData.add("org/");
-        filterData.add("ch/");
-        filterData.add("javassist/");
-        filterData.add("io/");
-        filterData.add("springfox/");
-        filterData.add("redis/");
-        filterData.add("javax/");
-        filterData.add("au/");
-        filterData.add("com/ggj/qa/gts/");
-        filterData.add("java/");
-        filterData.add("rx/");
-        filterData.add("net/");
-
-        for (int i = 0; i < filterData.size(); i++) {
-            if (className.startsWith(filterData.get(i)) || className.contains("$$")) {
-                return null;
-            }
+        //定制化过滤内容
+        if (filterBySelf(className)) {
+            return null;
         }
 
         // 调用字节码插入
-        return callAsmCoreApi(classfileBuffer);
+        return callAsmCoreApi(classfileBuffer, traceClass, traceMethod);
 //        return callASMTreeApi(classfileBuffer);
 
     }
@@ -102,11 +78,11 @@ public class ClassTransformer implements ClassFileTransformer {
      * @param classfileBuffer
      * @return
      */
-    private byte[] callAsmCoreApi(byte[] classfileBuffer) {
+    private byte[] callAsmCoreApi(byte[] classfileBuffer,String traceClass,String traceMethod) {
         ClassReader cr = new ClassReader(classfileBuffer);
         ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
 
-        ClassVisitor cv = new ClassAdapter(cw);
+        ClassVisitor cv = new ClassAdapter(cw, traceClass,traceMethod);
         cr.accept(cv, 0);
         return cw.toByteArray();
     }
@@ -175,6 +151,45 @@ public class ClassTransformer implements ClassFileTransformer {
             if (exclClassloader.matches(loader.getClass().getName())) return false;
         }
         return !className.startsWith(AGENT_PREFIX) && includes.matches(className) && !excludes.matches(className);
+    }
+
+    /**
+     * @param className
+     * @return 返回true需要过滤
+     */
+    static boolean filterBySelf(String className) {
+        String[] filterData = new String[24];
+        filterData[0] = "com/intellij/";
+        filterData[1] = "com/beust/";
+        filterData[2] = "com/alibaba/";
+        filterData[3] = "com/aliyun/";
+        filterData[4] = "com/mysql/";
+        filterData[5] = "com/google/";
+        filterData[6] = "com/fasterxml/";
+        filterData[7] = "com/sun/";
+        filterData[8] = "com/github/";
+        filterData[9] = "com/zaxxer/";
+        filterData[10] = "sun/";
+        filterData[11] = "org/";
+        filterData[12] = "ch/";
+        filterData[13] = "javassist/";
+        filterData[14] = "io/";
+        filterData[15] = "springfox/";
+        filterData[16] = "redis/";
+        filterData[17] = "javax/";
+        filterData[18] = "au/";
+        filterData[19] = "java/";
+        filterData[20] = "rx/";
+        filterData[21] = "net/";
+        filterData[22] = "com/ggj/qa/";
+        filterData[23] = "com/ggj/platform/";
+
+        for (int i = 0; i < filterData.length; i++) {
+            if (className.startsWith(filterData[i]) || className.contains("$$")) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private boolean hasSourceLocation(final ProtectionDomain protectionDomain) {
