@@ -23,8 +23,7 @@ public class ClassTransformer implements ClassFileTransformer {
 
     private final String traceClass;
     private final String traceMethod;
-
-
+    private final String traceFilePath;
 
     static {
         final String name = ClassTransformer.class.getName();
@@ -39,7 +38,7 @@ public class ClassTransformer implements ClassFileTransformer {
         inclNoLocationClasses = options.getInclNoLocationClasses();
         traceClass = options.getTraceClass();
         traceMethod = options.getTraceMethod();
-
+        traceFilePath = options.getTraceFilePath();
     }
 
     @Override
@@ -62,7 +61,7 @@ public class ClassTransformer implements ClassFileTransformer {
         if (filterBySelf(className)) return null;
 
         // 调用字节码插入
-        return callAsmCoreApi(classfileBuffer, traceClass, traceMethod);
+        return callAsmCoreApi(classfileBuffer, traceClass, traceMethod, traceFilePath);
 //        return callASMTreeApi(classfileBuffer);
 
     }
@@ -73,11 +72,11 @@ public class ClassTransformer implements ClassFileTransformer {
      * @param classfileBuffer
      * @return
      */
-    private byte[] callAsmCoreApi(byte[] classfileBuffer, String traceClass, String traceMethod) {
+    private byte[] callAsmCoreApi(byte[] classfileBuffer, String traceClass, String traceMethod, String traceFilePath) {
         ClassReader cr = new ClassReader(classfileBuffer);
         ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
 
-        ClassVisitor cv = new ClassAdapter(cw, traceClass, traceMethod);
+        ClassVisitor cv = new ClassAdapter(cw, traceClass, traceMethod, traceFilePath);
         cr.accept(cv, 0);
         return cw.toByteArray();
     }
@@ -122,8 +121,6 @@ public class ClassTransformer implements ClassFileTransformer {
         return cw.toByteArray();
     }
 
-
-
     boolean filter(final ClassLoader loader, final String className, final ProtectionDomain protectionDomain) {
         if (loader == null) {
             if (!inclBootstrapClasses) return false;
@@ -139,7 +136,7 @@ public class ClassTransformer implements ClassFileTransformer {
      * @return 返回true需要过滤
      */
     static boolean filterBySelf(String className) {
-        String[] filterData = new String[24];
+        String[] filterData = new String[25];
         filterData[0] = "com/intellij/";
         filterData[1] = "com/beust/";
         filterData[2] = "com/alibaba/";
@@ -162,8 +159,9 @@ public class ClassTransformer implements ClassFileTransformer {
         filterData[19] = "java/";
         filterData[20] = "rx/";
         filterData[21] = "net/";
-        filterData[22] = "com/ggj/qa/";
-        filterData[23] = "com/ggj/platform/";
+        filterData[22] = "junit/";
+        filterData[23] = "com/ggj/qa/";
+        filterData[24] = "com/ggj/platform/";
 
         for (int i = 0; i < filterData.length; i++) {
             if (className.startsWith(filterData[i]) || className.contains("$$")) {

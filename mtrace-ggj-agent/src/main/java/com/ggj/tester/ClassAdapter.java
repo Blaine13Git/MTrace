@@ -6,6 +6,8 @@ import org.objectweb.asm.Opcodes;
 
 import java.io.FileOutputStream;
 import java.io.PrintStream;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 
 /**
@@ -19,11 +21,15 @@ public class ClassAdapter extends ClassVisitor implements Opcodes {
     protected String methodName;
     private String traceClass;
     private String traceMethod;
+    private String traceFilePath;
+    private static SimpleDateFormat dateFormat;
 
-    public ClassAdapter(final ClassVisitor cv, String traceClass, String traceMethod) {
+    public ClassAdapter(final ClassVisitor cv, String traceClass, String traceMethod, String traceFilePath) {
         super(ASM7, cv);
         this.traceClass = traceClass;
         this.traceMethod = traceMethod;
+        this.traceFilePath = traceFilePath;
+        dateFormat = new SimpleDateFormat("yyyy-MM-dd");
     }
 
     @Override
@@ -39,9 +45,19 @@ public class ClassAdapter extends ClassVisitor implements Opcodes {
         isInterface = (access & Opcodes.ACC_INTERFACE) != 0;
         className = name;
 
+        Date date = new Date();
+        String formatDate = dateFormat.format(date);
+
+        String projectPath = System.getProperty("user.dir");
+
         // 重定向输出到指定文件
-        String traceFile = "/Users/changfeng/work/code/MTrace/out/artifacts/mtrace/Trace.log";
-        redirectOutPut(traceFile);
+        if (null == traceFilePath || traceFilePath.length() == 0) {
+            String traceFile = projectPath + "/" + formatDate + "_Trace.log";
+            redirectOutPut(traceFile);
+        } else {
+            String traceFile = traceFilePath + "/" + formatDate + "_Trace.log";
+            redirectOutPut(traceFile);
+        }
 
         if (!isInterface && traceClass.equals("true")) {
             System.err.println("\nClass-Load:" + className);

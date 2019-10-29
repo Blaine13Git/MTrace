@@ -10,6 +10,7 @@ public final class AgentOptions {
 
     public static final String TRACECLASS = "traceClass";
     public static final String TRACEMETHOD = "traceMethod";
+    public static final String TRACEFILEPATH = "traceFilePath";
 
     public static final String DESTFILE = "destfile";
     public static final String DEFAULT_DESTFILE = "jacoco.exec";
@@ -23,12 +24,14 @@ public final class AgentOptions {
     public static final String DUMPONEXIT = "dumponexit";
     public static final String OUTPUT = "output";
     private static final Pattern OPTION_SPLIT = Pattern.compile(",(?=[a-zA-Z0-9_\\-]+=)");
+
     public static enum OutputMode {
         file,
         tcpserver,
         tcpclient,
         none
     }
+
     public static final String ADDRESS = "address";
     public static final String DEFAULT_ADDRESS = null;
     public static final String PORT = "port";
@@ -37,7 +40,7 @@ public final class AgentOptions {
     public static final String JMX = "jmx";
 
     private static final Collection<String> VALID_OPTIONS = Arrays.asList(
-            TRACECLASS, TRACEMETHOD, DESTFILE, APPEND, INCLUDES, EXCLUDES, EXCLCLASSLOADER,
+            TRACECLASS, TRACEMETHOD, TRACEFILEPATH, DESTFILE, APPEND, INCLUDES, EXCLUDES, EXCLCLASSLOADER,
             INCLBOOTSTRAPCLASSES, INCLNOLOCATIONCLASSES, SESSIONID, DUMPONEXIT,
             OUTPUT, ADDRESS, PORT, CLASSDUMPDIR, JMX);
 
@@ -93,36 +96,47 @@ public final class AgentOptions {
     public String getDestfile() {
         return getOption(DESTFILE, DEFAULT_DESTFILE);
     }
+
     public void setDestfile(final String destfile) {
         setOption(DESTFILE, destfile);
     }
+
     public boolean getAppend() {
         return getOption(APPEND, true);
     }
+
     public void setAppend(final boolean append) {
         setOption(APPEND, append);
     }
+
     public String getIncludes() {
         return getOption(INCLUDES, "*");
     }
+
     public void setIncludes(final String includes) {
         setOption(INCLUDES, includes);
     }
+
     public String getExcludes() {
         return getOption(EXCLUDES, "");
     }
+
     public void setExcludes(final String excludes) {
         setOption(EXCLUDES, excludes);
     }
+
     public String getExclClassloader() {
         return getOption(EXCLCLASSLOADER, "sun.reflect.DelegatingClassLoader");
     }
+
     public void setExclClassloader(final String expression) {
         setOption(EXCLCLASSLOADER, expression);
     }
+
     public boolean getInclBootstrapClasses() {
         return getOption(INCLBOOTSTRAPCLASSES, false);
     }
+
     public void setInclBootstrapClasses(final boolean include) {
         setOption(INCLBOOTSTRAPCLASSES, include);
     }
@@ -218,8 +232,16 @@ public final class AgentOptions {
         return getOption(TRACEMETHOD, "true");
     }
 
-    public void setTracemethod(final String traceMethod) {
+    public void setTraceMethod(final String traceMethod) {
         setOption(TRACEMETHOD, traceMethod);
+    }
+
+    public String getTraceFilePath() {
+        return getOption(TRACEFILEPATH, "");
+    }
+
+    public void setTraceFilePath(final String traceFilePath) {
+        setOption(TRACEFILEPATH, traceFilePath);
     }
 
     /**
