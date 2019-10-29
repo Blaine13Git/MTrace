@@ -1,36 +1,14 @@
-/*******************************************************************************
- * Copyright (c) 2009, 2019 Mountainminds GmbH & Co. KG and Contributors
- * This program and the accompanying materials are made available under
- * the terms of the Eclipse Public License 2.0 which is available at
- * http://www.eclipse.org/legal/epl-2.0
- *
- * SPDX-License-Identifier: EPL-2.0
- *
- * Contributors:
- *    Marc R. Hoffmann - initial API and implementation
- *
- *******************************************************************************/
 package com.ggj.tester;
 
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Internal utility to parse and create command lines arguments.
- */
 final class CommandLineSupport {
 
 	private static final char BLANK = ' ';
 	private static final char QUOTE = '"';
 	private static final char SLASH = '\\';
 
-	/**
-	 * Quotes a single command line argument if necessary.
-	 *
-	 * @param arg
-	 *            command line argument
-	 * @return quoted argument
-	 */
 	static String quote(final String arg) {
 		final StringBuilder escaped = new StringBuilder();
 		for (final char c : arg.toCharArray()) {

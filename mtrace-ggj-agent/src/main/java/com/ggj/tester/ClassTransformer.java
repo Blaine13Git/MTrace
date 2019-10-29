@@ -6,8 +6,6 @@ import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.*;
 
-import java.io.FileOutputStream;
-import java.io.PrintStream;
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
 import java.security.CodeSource;
@@ -26,6 +24,8 @@ public class ClassTransformer implements ClassFileTransformer {
     private final String traceClass;
     private final String traceMethod;
 
+
+
     static {
         final String name = ClassTransformer.class.getName();
         AGENT_PREFIX = toVMName(name.substring(0, name.lastIndexOf('.')));
@@ -39,6 +39,7 @@ public class ClassTransformer implements ClassFileTransformer {
         inclNoLocationClasses = options.getInclNoLocationClasses();
         traceClass = options.getTraceClass();
         traceMethod = options.getTraceMethod();
+
     }
 
     @Override
@@ -54,17 +55,11 @@ public class ClassTransformer implements ClassFileTransformer {
             return null;
         }
 
-        // 重定向输出到指定文件
-        String traceFile = "/Users/changfeng/work/code/MTrace/out/artifacts/mtrace/trace.log";
-        redirectOutPut(traceFile);
-
         // 基本过滤
         if (!filter(loader, className, protectionDomain)) return null;
 
         //定制化过滤内容
-        if (filterBySelf(className)) {
-            return null;
-        }
+        if (filterBySelf(className)) return null;
 
         // 调用字节码插入
         return callAsmCoreApi(classfileBuffer, traceClass, traceMethod);
@@ -78,11 +73,11 @@ public class ClassTransformer implements ClassFileTransformer {
      * @param classfileBuffer
      * @return
      */
-    private byte[] callAsmCoreApi(byte[] classfileBuffer,String traceClass,String traceMethod) {
+    private byte[] callAsmCoreApi(byte[] classfileBuffer, String traceClass, String traceMethod) {
         ClassReader cr = new ClassReader(classfileBuffer);
         ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
 
-        ClassVisitor cv = new ClassAdapter(cw, traceClass,traceMethod);
+        ClassVisitor cv = new ClassAdapter(cw, traceClass, traceMethod);
         cr.accept(cv, 0);
         return cw.toByteArray();
     }
@@ -127,21 +122,7 @@ public class ClassTransformer implements ClassFileTransformer {
         return cw.toByteArray();
     }
 
-    /**
-     * 重定向输出
-     *
-     * @param filePath
-     */
-    public void redirectOutPut(String filePath) {
-        try {
-            FileOutputStream fileOutputStream = new FileOutputStream(filePath, true);
-            PrintStream printStream = new PrintStream(fileOutputStream);
-//            System.setOut(printStream);
-            System.setErr(printStream);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
+
 
     boolean filter(final ClassLoader loader, final String className, final ProtectionDomain protectionDomain) {
         if (loader == null) {
@@ -203,5 +184,6 @@ public class ClassTransformer implements ClassFileTransformer {
     private static String toVMName(final String srcName) {
         return srcName.replace('.', '/');
     }
+
 
 }
