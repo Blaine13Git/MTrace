@@ -1,6 +1,7 @@
 package com.ggj.tester;
 
 import org.objectweb.asm.ClassVisitor;
+import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
@@ -24,7 +25,13 @@ public class ClassAdapter extends ClassVisitor implements Opcodes {
     private String traceFilePath;
     private static SimpleDateFormat dateFormat;
 
-    public ClassAdapter(final ClassVisitor cv, String traceClass, String traceMethod, String traceFilePath) {
+
+    public ClassAdapter(
+            final ClassVisitor cv,
+            String traceClass,
+            String traceMethod,
+            String traceFilePath
+    ) {
         super(ASM7, cv);
         this.traceClass = traceClass;
         this.traceMethod = traceMethod;

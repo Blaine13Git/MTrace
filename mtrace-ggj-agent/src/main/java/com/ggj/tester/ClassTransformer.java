@@ -10,6 +10,7 @@ import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
 import java.security.CodeSource;
 import java.security.ProtectionDomain;
+import java.text.SimpleDateFormat;
 
 import static org.objectweb.asm.Opcodes.ASM7;
 
