@@ -7,7 +7,6 @@ import java.lang.instrument.Instrumentation;
  */
 public class MTAgent {
 
-
     public static void premain(final String options, final Instrumentation instrumentation) {
 
         final AgentOptions agentOptions = new AgentOptions(options);
@@ -16,8 +15,6 @@ public class MTAgent {
         instrumentation.addTransformer(new ClassTransformer(agentOptions));
 
     }
-
-
 
 }
 
