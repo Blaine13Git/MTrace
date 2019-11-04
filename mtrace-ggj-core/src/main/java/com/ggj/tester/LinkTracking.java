@@ -11,15 +11,13 @@ import java.util.Date;
  */
 public class LinkTracking {
 
-
     public static void main(String[] args) {
         String file = "/Users/changfeng/work/code/MTrace/out/artifacts/mtrace/2019-11-01_Trace.log";
-        String methodName = "createDeliverTimeConfig";
+        String methodName = "updateDeliverTimeConfig";
         getTraceData(file, methodName);
     }
 
     private static void getTraceData(String originalData_file, String methodName) {
-
         try (BufferedReader bufferedReader = new BufferedReader(new FileReader(new File(originalData_file)))) {
             String lineData = bufferedReader.readLine();
 

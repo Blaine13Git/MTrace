@@ -23,22 +23,20 @@ public class ClassTransformer implements ClassFileTransformer {
 
     private final String traceClass;
     private final String traceMethod;
-    private final String traceFilePath;
 
     static {
         final String name = ClassTransformer.class.getName();
         AGENT_PREFIX = toVMName(name.substring(0, name.lastIndexOf('.')));
     }
 
-    public ClassTransformer(final AgentOptions options) {
-        includes = new WildcardMatcher(toVMName(options.getIncludes()));
-        excludes = new WildcardMatcher(toVMName(options.getExcludes()));
-        exclClassloader = new WildcardMatcher(options.getExclClassloader());
-        inclBootstrapClasses = options.getInclBootstrapClasses();
-        inclNoLocationClasses = options.getInclNoLocationClasses();
-        traceClass = options.getTraceClass();
-        traceMethod = options.getTraceMethod();
-        traceFilePath = options.getTraceFilePath();
+    public ClassTransformer(final AgentOptions agentOptions) {
+        includes = new WildcardMatcher(toVMName(agentOptions.getIncludes()));
+        excludes = new WildcardMatcher(toVMName(agentOptions.getExcludes()));
+        exclClassloader = new WildcardMatcher(agentOptions.getExclClassloader());
+        inclBootstrapClasses = agentOptions.getInclBootstrapClasses();
+        inclNoLocationClasses = agentOptions.getInclNoLocationClasses();
+        traceClass = agentOptions.getTraceClass();
+        traceMethod = agentOptions.getTraceMethod();
     }
 
     @Override
@@ -50,18 +48,17 @@ public class ClassTransformer implements ClassFileTransformer {
             byte[] classfileBuffer //原字节码
     ) throws IllegalClassFormatException {
 
-        if (classBeingRedefined != null) {
-            return null;
-        }
+        // 一级过滤
+        if (classBeingRedefined != null) return null;
 
-        // 基本过滤
+        // 二级过滤
         if (!filter(loader, className, protectionDomain)) return null;
 
-        //定制化过滤内容
+        // 三级过滤
         if (filterBySelf(className)) return null;
 
-        // 调用字节码插入
-        return callAsmCoreApi(classfileBuffer, traceClass, traceMethod, traceFilePath);
+        // 注入
+        return callAsmCoreApi(classfileBuffer, traceClass, traceMethod);
 //        return callASMTreeApi(classfileBuffer);
 
     }
@@ -72,11 +69,11 @@ public class ClassTransformer implements ClassFileTransformer {
      * @param classfileBuffer
      * @return
      */
-    private byte[] callAsmCoreApi(byte[] classfileBuffer, String traceClass, String traceMethod, String traceFilePath) {
+    private byte[] callAsmCoreApi(byte[] classfileBuffer, String traceClass, String traceMethod) {
         ClassReader cr = new ClassReader(classfileBuffer);
         ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
 
-        ClassVisitor cv = new ClassAdapter(cw, traceClass, traceMethod, traceFilePath);
+        ClassVisitor cv = new ClassAdapter(cw, traceClass, traceMethod);
         cr.accept(cv, 0);
         return cw.toByteArray();
     }
@@ -182,6 +179,5 @@ public class ClassTransformer implements ClassFileTransformer {
     private static String toVMName(final String srcName) {
         return srcName.replace('.', '/');
     }
-
 
 }

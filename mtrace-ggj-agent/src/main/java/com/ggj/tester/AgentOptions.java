@@ -12,16 +12,11 @@ public final class AgentOptions {
     public static final String TRACEMETHOD = "traceMethod";
     public static final String TRACEFILEPATH = "traceFilePath";
 
-    public static final String DESTFILE = "destfile";
-    public static final String DEFAULT_DESTFILE = "jacoco.exec";
-    public static final String APPEND = "append";
     public static final String INCLUDES = "includes";
     public static final String EXCLUDES = "excludes";
     public static final String EXCLCLASSLOADER = "exclclassloader";
     public static final String INCLBOOTSTRAPCLASSES = "inclbootstrapclasses";
     public static final String INCLNOLOCATIONCLASSES = "inclnolocationclasses";
-    public static final String SESSIONID = "sessionid";
-    public static final String DUMPONEXIT = "dumponexit";
     public static final String OUTPUT = "output";
     private static final Pattern OPTION_SPLIT = Pattern.compile(",(?=[a-zA-Z0-9_\\-]+=)");
 
@@ -32,17 +27,13 @@ public final class AgentOptions {
         none
     }
 
-    public static final String ADDRESS = "address";
-    public static final String DEFAULT_ADDRESS = null;
     public static final String PORT = "port";
     public static final int DEFAULT_PORT = 6300;
-    public static final String CLASSDUMPDIR = "classdumpdir";
-    public static final String JMX = "jmx";
 
     private static final Collection<String> VALID_OPTIONS = Arrays.asList(
-            TRACECLASS, TRACEMETHOD, TRACEFILEPATH, DESTFILE, APPEND, INCLUDES, EXCLUDES, EXCLCLASSLOADER,
-            INCLBOOTSTRAPCLASSES, INCLNOLOCATIONCLASSES, SESSIONID, DUMPONEXIT,
-            OUTPUT, ADDRESS, PORT, CLASSDUMPDIR, JMX);
+            TRACECLASS, TRACEMETHOD, TRACEFILEPATH, INCLUDES, EXCLUDES, EXCLCLASSLOADER,
+            INCLBOOTSTRAPCLASSES, INCLNOLOCATIONCLASSES,
+            OUTPUT, PORT);
 
     private final Map<String, String> options;
 
@@ -93,22 +84,6 @@ public final class AgentOptions {
         }
     }
 
-    public String getDestfile() {
-        return getOption(DESTFILE, DEFAULT_DESTFILE);
-    }
-
-    public void setDestfile(final String destfile) {
-        setOption(DESTFILE, destfile);
-    }
-
-    public boolean getAppend() {
-        return getOption(APPEND, true);
-    }
-
-    public void setAppend(final boolean append) {
-        setOption(APPEND, append);
-    }
-
     public String getIncludes() {
         return getOption(INCLUDES, "*");
     }
@@ -141,80 +116,18 @@ public final class AgentOptions {
         setOption(INCLBOOTSTRAPCLASSES, include);
     }
 
-    /**
-     * Returns whether classes without source location should be instrumented.
-     *
-     * @return <code>true</code> if classes without source location should be
-     * instrumented
-     */
     public boolean getInclNoLocationClasses() {
         return getOption(INCLNOLOCATIONCLASSES, false);
     }
 
-    /**
-     * Sets whether classes without source location should be instrumented.
-     *
-     * @param include <code>true</code> if classes without source location should be
-     *                instrumented
-     */
     public void setInclNoLocationClasses(final boolean include) {
         setOption(INCLNOLOCATIONCLASSES, include);
     }
 
-    /**
-     * Returns the session identifier.
-     *
-     * @return session identifier
-     */
-    public String getSessionId() {
-        return getOption(SESSIONID, null);
-    }
-
-    /**
-     * Sets the session identifier.
-     *
-     * @param id session identifier
-     */
-    public void setSessionId(final String id) {
-        setOption(SESSIONID, id);
-    }
-
-    /**
-     * Returns whether coverage data should be dumped on exit.
-     *
-     * @return <code>true</code> if coverage data will be written on VM exit
-     */
-    public boolean getDumpOnExit() {
-        return getOption(DUMPONEXIT, true);
-    }
-
-    /**
-     * Sets whether coverage data should be dumped on exit.
-     *
-     * @param dumpOnExit <code>true</code> if coverage data should be written on VM
-     *                   exit
-     */
-    public void setDumpOnExit(final boolean dumpOnExit) {
-        setOption(DUMPONEXIT, dumpOnExit);
-    }
-
-    /**
-     * Returns the port on which to listen to when the output is
-     * <code>tcpserver</code> or the port to connect to when output is
-     * <code>tcpclient</code>.
-     *
-     * @return port to listen on or connect to
-     */
     public int getPort() {
         return getOption(PORT, DEFAULT_PORT);
     }
 
-    /**
-     * Sets the port on which to listen to when output is <code>tcpserver</code>
-     * or the port to connect to when output is <code>tcpclient</code>
-     *
-     * @param port port to listen on or connect to
-     */
     public void setPort(final int port) {
         validatePort(port);
         setOption(PORT, port);
@@ -244,92 +157,17 @@ public final class AgentOptions {
         setOption(TRACEFILEPATH, traceFilePath);
     }
 
-    /**
-     * Gets the hostname or IP address to listen to when output is
-     * <code>tcpserver</code> or connect to when output is
-     * <code>tcpclient</code>
-     *
-     * @return Hostname or IP address
-     */
-    public String getAddress() {
-        return getOption(ADDRESS, DEFAULT_ADDRESS);
-    }
-
-    /**
-     * Sets the hostname or IP address to listen to when output is
-     * <code>tcpserver</code> or connect to when output is
-     * <code>tcpclient</code>
-     *
-     * @param address Hostname or IP address
-     */
-    public void setAddress(final String address) {
-        setOption(ADDRESS, address);
-    }
-
-    /**
-     * Returns the output mode
-     *
-     * @return current output mode
-     */
     public OutputMode getOutput() {
         final String value = options.get(OUTPUT);
         return value == null ? OutputMode.file : OutputMode.valueOf(value);
     }
 
-
-    /**
-     * Sets the output mode
-     *
-     * @param output Output mode
-     */
     public void setOutput(final String output) {
         setOutput(OutputMode.valueOf(output));
     }
 
-    /**
-     * Sets the output mode
-     *
-     * @param output Output mode
-     */
     public void setOutput(final OutputMode output) {
         setOption(OUTPUT, output.name());
-    }
-
-    /**
-     * Returns the location of the directory where class files should be dumped
-     * to.
-     *
-     * @return dump location or <code>null</code> (no dumps)
-     */
-    public String getClassDumpDir() {
-        return getOption(CLASSDUMPDIR, null);
-    }
-
-    /**
-     * Sets the directory where class files should be dumped to.
-     *
-     * @param location dump location or <code>null</code> (no dumps)
-     */
-    public void setClassDumpDir(final String location) {
-        setOption(CLASSDUMPDIR, location);
-    }
-
-    /**
-     * Returns whether the agent exposes functionality via JMX.
-     *
-     * @return <code>true</code>, when JMX is enabled
-     */
-    public boolean getJmx() {
-        return getOption(JMX, false);
-    }
-
-    /**
-     * Sets whether the agent should expose functionality via JMX.
-     *
-     * @param jmx <code>true</code> if JMX should be enabled
-     */
-    public void setJmx(final boolean jmx) {
-        setOption(JMX, jmx);
     }
 
     private void setOption(final String key, final int value) {
@@ -359,55 +197,6 @@ public final class AgentOptions {
         return value == null ? defaultValue : Integer.parseInt(value);
     }
 
-    /**
-     * Generate required JVM argument based on current configuration and
-     * supplied agent jar location.
-     *
-     * @param agentJarFile location of the JaCoCo Agent Jar
-     * @return Argument to pass to create new VM with coverage enabled
-     */
-    public String getVMArgument(final File agentJarFile) {
-        return format("-javaagent:%s=%s", agentJarFile, this);
-    }
-
-    /**
-     * Generate required quoted JVM argument based on current configuration and
-     * supplied agent jar location.
-     *
-     * @param agentJarFile location of the JaCoCo Agent Jar
-     * @return Quoted argument to pass to create new VM with coverage enabled
-     */
-    public String getQuotedVMArgument(final File agentJarFile) {
-        return CommandLineSupport.quote(getVMArgument(agentJarFile));
-    }
-
-    /**
-     * Generate required quotes JVM argument based on current configuration and
-     * prepends it to the given argument command line. If a agent with the same
-     * JAR file is already specified this parameter is removed from the existing
-     * command line.
-     *
-     * @param arguments    existing command line arguments or <code>null</code>
-     * @param agentJarFile location of the JaCoCo Agent Jar
-     * @return VM command line arguments prepended with configured JaCoCo agent
-     */
-    public String prependVMArguments(final String arguments,
-                                     final File agentJarFile) {
-        final List<String> args = CommandLineSupport.split(arguments);
-        final String plainAgent = format("-javaagent:%s", agentJarFile);
-        for (final Iterator<String> i = args.iterator(); i.hasNext(); ) {
-            if (i.next().startsWith(plainAgent)) {
-                i.remove();
-            }
-        }
-        args.add(0, getVMArgument(agentJarFile));
-        return CommandLineSupport.quote(args);
-    }
-
-    /**
-     * Creates a string representation that can be passed to the agent via the
-     * command line. Might be the empty string, if no options are set.
-     */
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder();
