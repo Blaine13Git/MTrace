@@ -12,21 +12,20 @@ import java.util.Date;
 public class LinkTracking {
 
     public static void main(String[] args) {
-//        String file = "/Users/changfeng/work/code/MTrace/out/artifacts/mtrace/2019-11-04_trade-service-consign-test_Trace.log";
-//        String methodName = "updateDeliverTimeConfig";
-//        getTraceData(file, methodName);
-
-        File file = new File("/Users/changfeng/work/code/MTrace/out");
-        lookFile(file);
+        String file = "/Users/changfeng/work/code/MTrace/out/artifacts/mtrace/2019-11-04_trade-service-consign-test_Trace.log";
+        String methodName = "getDeliverTimeConfig";
+        getTraceData(file, methodName);
+//
+//        File file = new File("/Users/changfeng/work/code/MTrace/out");
+//        lookFile(file);
     }
 
     private static void getTraceData(String originalData_file, String methodName) {
         try (BufferedReader bufferedReader = new BufferedReader(new FileReader(new File(originalData_file)))) {
-            String lineData = bufferedReader.readLine();
-            while (lineData != null) {
-                if (lineData.endsWith(methodName)) {
-                    String traceLinkStart = lineData;
-                    System.out.println("traceLinkStart: " + lineData);
+            String traceLinkStart  = bufferedReader.readLine();
+            while (traceLinkStart != null) {
+                if (traceLinkStart.endsWith(methodName)) {
+                    System.out.println("traceLinkStart: " + traceLinkStart);
                     String[] splitTraceStart = traceLinkStart.split(", ");
                     String traceLinkEnd;
                     String traceLinkEnd_subString = splitTraceStart[1] + splitTraceStart[2].replace("call", ", return");
@@ -42,14 +41,14 @@ public class LinkTracking {
                             Date endTime = dateFormat.parse(traceLinkEnd.split(", ")[0]);
                             System.out.println("耗时: " + (endTime.getTime() - startTime.getTime()) + "ms");
 
-                            return;
+                            break;
                         } else {
                             System.out.println("traceLinkMiddle: " + traceLinkMiddle);
                         }
                         traceLinkMiddle = bufferedReader.readLine();
                     }
                 }
-                lineData = bufferedReader.readLine();
+                traceLinkStart = bufferedReader.readLine();
             }
         } catch (Exception e) {
             e.printStackTrace();

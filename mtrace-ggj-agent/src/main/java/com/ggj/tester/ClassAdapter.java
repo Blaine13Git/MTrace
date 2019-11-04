@@ -16,6 +16,7 @@ public class ClassAdapter extends ClassVisitor implements Opcodes {
     private String traceClass;
     private String traceMethod;
 
+
     public ClassAdapter(
             final ClassVisitor cv,
             String traceClass,
