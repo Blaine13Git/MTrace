@@ -26,6 +26,7 @@ public class LinkTracking {
 
 //        File file = new File("/Users/changfeng/work/code/MTrace/out");
 //        lookFile(file);
+
     }
 
     //清洗线程
@@ -33,18 +34,18 @@ public class LinkTracking {
         HashMap<String, String> traceMap = new HashMap<>();
 
         try (BufferedReader bufferedReader = new BufferedReader(new FileReader(new File(originalData_file)))) {
-            String traceLinkData = bufferedReader.readLine();
-            while (traceLinkData != null) {
-                if (!traceLinkData.startsWith("Class-Load")) {
+            String linkTraceData = bufferedReader.readLine();
+            while (linkTraceData != null) {
+                if (!linkTraceData.startsWith("Class-Load")) {
                     // 根据线程Id进行第一次数据清洗
-                    String[] splitTraceData = traceLinkData.split(", ");
+                    String[] splitTraceData = linkTraceData.split(", ");
                     if (traceMap.get(splitTraceData[1]) == null) {
-                        traceMap.put(splitTraceData[1], traceLinkData);
+                        traceMap.put(splitTraceData[1], linkTraceData);
                     } else {
-                        traceMap.put(splitTraceData[1], traceMap.get(splitTraceData[1]) + ">>>" + traceLinkData);
+                        traceMap.put(splitTraceData[1], traceMap.get(splitTraceData[1]) + ">>>" + linkTraceData);
                     }
                 }
-                traceLinkData = bufferedReader.readLine();
+                linkTraceData = bufferedReader.readLine();
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -63,7 +64,7 @@ public class LinkTracking {
             StringBuilder value = new StringBuilder();
             String[] threadTraceData = next.getValue().split(">>>");
 
-            String traceLinkEndSubString = null;
+            String linkTraceEndSubString = null;
             int start = 0;
             for (int i = 0; i < threadTraceData.length; i++) {
                 if (threadTraceData[i].endsWith(methodName)) {
@@ -75,12 +76,12 @@ public class LinkTracking {
                         value.append(threadTraceData[i]);
                     }
                     String[] traceDataSplit = threadTraceData[i].split(", ");
-                    traceLinkEndSubString = traceDataSplit[1] +", "+ traceDataSplit[2].replace("call","return");
+                    linkTraceEndSubString = traceDataSplit[1] +", "+ traceDataSplit[2].replace("call","return");
                     break;
                 }
             }
             for (int j = start+1; j < threadTraceData.length-start; j++) {
-                if (threadTraceData[j].endsWith(traceLinkEndSubString)) {
+                if (threadTraceData[j].endsWith(linkTraceEndSubString)) {
                     value.append(">>>");
                     value.append(threadTraceData[j]);
                     break;
