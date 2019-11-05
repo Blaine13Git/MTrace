@@ -20,9 +20,17 @@ public class LinkTracking {
         Iterator<Map.Entry<String, String>> iterator = methodLinkTrace.entrySet().iterator();
         while (iterator.hasNext()) {
             Map.Entry<String, String> next = iterator.next();
-            System.out.print(next.getKey());
+            System.out.println(next.getKey());
             System.out.println(next.getValue().replace(">>>", "\n"));
         }
+
+//        HashMap<String, String> traceData = getTraceData(fileName);
+//        Iterator<Map.Entry<String, String>> iterator = traceData.entrySet().iterator();
+//        while (iterator.hasNext()){
+//            Map.Entry<String, String> next = iterator.next();
+//            System.out.println(next.getValue().replace(">>>","\n"));
+//        }
+
 
 //        File file = new File("/Users/changfeng/work/code/MTrace/out");
 //        lookFile(file);
@@ -32,7 +40,6 @@ public class LinkTracking {
     //清洗线程
     private static HashMap<String, String> getTraceData(String originalData_file) {
         HashMap<String, String> traceMap = new HashMap<>();
-
         try (BufferedReader bufferedReader = new BufferedReader(new FileReader(new File(originalData_file)))) {
             String linkTraceData = bufferedReader.readLine();
             while (linkTraceData != null) {
@@ -57,7 +64,7 @@ public class LinkTracking {
     private static HashMap<String, String> getMethodLinkTrace(String fileName, String methodName) {
         HashMap<String, String> traceData = getTraceData(fileName);
         Iterator<Map.Entry<String, String>> iterator = traceData.entrySet().iterator();
-        HashMap<String, String> methodTraceLink = new HashMap<>();
+        HashMap<String, String> methodLinkTrace = new HashMap<>();
         while (iterator.hasNext()) {
             Map.Entry<String, String> next = iterator.next();
             String key = next.getKey();
@@ -69,30 +76,34 @@ public class LinkTracking {
             for (int i = 0; i < threadTraceData.length; i++) {
                 if (threadTraceData[i].endsWith(methodName)) {
                     start = i;
-                    if (value == null) {
+                    if (value == null || value.length() == 0) {
                         value.append(threadTraceData[i]);
                     } else {
                         value.append(">>>");
                         value.append(threadTraceData[i]);
                     }
                     String[] traceDataSplit = threadTraceData[i].split(", ");
-                    linkTraceEndSubString = traceDataSplit[1] +", "+ traceDataSplit[2].replace("call","return");
-                    break;
+                    linkTraceEndSubString = traceDataSplit[1] + ", " + traceDataSplit[2].replace("call", "return");
+                }
+
+                if (linkTraceEndSubString != null && !value.toString().endsWith(linkTraceEndSubString)) {
+                    for (int j = start + 1; j < threadTraceData.length; j++) {
+                        if (threadTraceData[j].endsWith(linkTraceEndSubString)) {
+                            value.append(">>>");
+                            value.append(threadTraceData[j]);
+                            i = j;
+                            break;
+                        } else {
+                            value.append(">>>");
+                            value.append(threadTraceData[j]);
+                        }
+                    }
                 }
             }
-            for (int j = start+1; j < threadTraceData.length-start; j++) {
-                if (threadTraceData[j].endsWith(linkTraceEndSubString)) {
-                    value.append(">>>");
-                    value.append(threadTraceData[j]);
-                    break;
-                }else {
-                    value.append(">>>");
-                    value.append(threadTraceData[j]);
-                }
-            }
-            methodTraceLink.put(key, value.toString());
+
+            methodLinkTrace.put(key, value.toString());
         }
-        return methodTraceLink;
+        return methodLinkTrace;
     }
 
     public static void lookFile(File file) {
