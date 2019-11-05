@@ -3,6 +3,8 @@ package com.ggj.tester;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -23,14 +25,6 @@ public class LinkTracking {
             System.out.println(next.getKey());
             System.out.println(next.getValue().replace(">>>", "\n"));
         }
-
-//        HashMap<String, String> traceData = getTraceData(fileName);
-//        Iterator<Map.Entry<String, String>> iterator = traceData.entrySet().iterator();
-//        while (iterator.hasNext()){
-//            Map.Entry<String, String> next = iterator.next();
-//            System.out.println(next.getValue().replace(">>>","\n"));
-//        }
-
 
 //        File file = new File("/Users/changfeng/work/code/MTrace/out");
 //        lookFile(file);
@@ -65,6 +59,11 @@ public class LinkTracking {
         HashMap<String, String> traceData = getTraceData(fileName);
         Iterator<Map.Entry<String, String>> iterator = traceData.entrySet().iterator();
         HashMap<String, String> methodLinkTrace = new HashMap<>();
+
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+        long startTime = 0;
+        long endTime = 0;
+
         while (iterator.hasNext()) {
             Map.Entry<String, String> next = iterator.next();
             String key = next.getKey();
@@ -84,14 +83,29 @@ public class LinkTracking {
                     }
                     String[] traceDataSplit = threadTraceData[i].split(", ");
                     linkTraceEndSubString = traceDataSplit[1] + ", " + traceDataSplit[2].replace("call", "return");
+
+                    try {
+                        startTime = dateFormat.parse(traceDataSplit[0]).getTime();
+                    } catch (ParseException e) {
+                        e.printStackTrace();
+                    }
                 }
 
-                if (linkTraceEndSubString != null && !value.toString().endsWith(linkTraceEndSubString)) {
+                if (linkTraceEndSubString != null && !value.toString().endsWith("ms-")) {
                     for (int j = start + 1; j < threadTraceData.length; j++) {
                         if (threadTraceData[j].endsWith(linkTraceEndSubString)) {
                             value.append(">>>");
                             value.append(threadTraceData[j]);
                             i = j;
+                            try {
+                                endTime = dateFormat.parse(threadTraceData[j].split(", ")[0]).getTime();
+                            } catch (ParseException e) {
+                                e.printStackTrace();
+                            }
+
+                            String timeSpend = endTime - startTime + "ms";
+                            value.append(">>>");
+                            value.append("timeSpend:-" + timeSpend + "-");
                             break;
                         } else {
                             value.append(">>>");
