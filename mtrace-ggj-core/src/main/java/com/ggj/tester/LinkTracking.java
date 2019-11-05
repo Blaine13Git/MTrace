@@ -3,8 +3,9 @@ package com.ggj.tester;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 /**
  * @author muyi
@@ -12,47 +13,85 @@ import java.util.Date;
 public class LinkTracking {
 
     public static void main(String[] args) {
-        String file = "/Users/changfeng/work/code/MTrace/out/artifacts/mtrace/2019-11-04_trade-service-consign-test_Trace.log";
+        String fileName = "/Users/changfeng/work/code/MTrace/out/artifacts/mtrace/2019-11-04_trade-service-consign-test_Trace.log";
         String methodName = "getDeliverTimeConfig";
-        getTraceData(file, methodName);
-//
+
+        HashMap<String, String> methodLinkTrace = getMethodLinkTrace(fileName, methodName);
+        Iterator<Map.Entry<String, String>> iterator = methodLinkTrace.entrySet().iterator();
+        while (iterator.hasNext()) {
+            Map.Entry<String, String> next = iterator.next();
+            System.out.print(next.getKey());
+            System.out.println(next.getValue().replace(">>>", "\n"));
+        }
+
 //        File file = new File("/Users/changfeng/work/code/MTrace/out");
 //        lookFile(file);
     }
 
-    private static void getTraceData(String originalData_file, String methodName) {
+    //清洗线程
+    private static HashMap<String, String> getTraceData(String originalData_file) {
+        HashMap<String, String> traceMap = new HashMap<>();
+
         try (BufferedReader bufferedReader = new BufferedReader(new FileReader(new File(originalData_file)))) {
-            String traceLinkStart  = bufferedReader.readLine();
-            while (traceLinkStart != null) {
-                if (traceLinkStart.endsWith(methodName)) {
-                    System.out.println("traceLinkStart: " + traceLinkStart);
-                    String[] splitTraceStart = traceLinkStart.split(", ");
-                    String traceLinkEnd;
-                    String traceLinkEnd_subString = splitTraceStart[1] + splitTraceStart[2].replace("call", ", return");
-
-                    String traceLinkMiddle = bufferedReader.readLine();
-                    while (traceLinkMiddle != null) {
-                        if (traceLinkMiddle.contains(traceLinkEnd_subString)) {
-                            traceLinkEnd = traceLinkMiddle;
-                            System.out.println("traceLinkEnd: " + traceLinkEnd);
-
-                            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
-                            Date startTime = dateFormat.parse(splitTraceStart[0]);
-                            Date endTime = dateFormat.parse(traceLinkEnd.split(", ")[0]);
-                            System.out.println("耗时: " + (endTime.getTime() - startTime.getTime()) + "ms");
-
-                            break;
-                        } else {
-                            System.out.println("traceLinkMiddle: " + traceLinkMiddle);
-                        }
-                        traceLinkMiddle = bufferedReader.readLine();
+            String traceLinkData = bufferedReader.readLine();
+            while (traceLinkData != null) {
+                if (!traceLinkData.startsWith("Class-Load")) {
+                    // 根据线程Id进行第一次数据清洗
+                    String[] splitTraceData = traceLinkData.split(", ");
+                    if (traceMap.get(splitTraceData[1]) == null) {
+                        traceMap.put(splitTraceData[1], traceLinkData);
+                    } else {
+                        traceMap.put(splitTraceData[1], traceMap.get(splitTraceData[1]) + ">>>" + traceLinkData);
                     }
                 }
-                traceLinkStart = bufferedReader.readLine();
+                traceLinkData = bufferedReader.readLine();
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
+        return traceMap;
+    }
+
+    //清洗方法
+    private static HashMap<String, String> getMethodLinkTrace(String fileName, String methodName) {
+        HashMap<String, String> traceData = getTraceData(fileName);
+        Iterator<Map.Entry<String, String>> iterator = traceData.entrySet().iterator();
+        HashMap<String, String> methodTraceLink = new HashMap<>();
+        while (iterator.hasNext()) {
+            Map.Entry<String, String> next = iterator.next();
+            String key = next.getKey();
+            StringBuilder value = new StringBuilder();
+            String[] threadTraceData = next.getValue().split(">>>");
+
+            String traceLinkEndSubString = null;
+            int start = 0;
+            for (int i = 0; i < threadTraceData.length; i++) {
+                if (threadTraceData[i].endsWith(methodName)) {
+                    start = i;
+                    if (value == null) {
+                        value.append(threadTraceData[i]);
+                    } else {
+                        value.append(">>>");
+                        value.append(threadTraceData[i]);
+                    }
+                    String[] traceDataSplit = threadTraceData[i].split(", ");
+                    traceLinkEndSubString = traceDataSplit[1] +", "+ traceDataSplit[2].replace("call","return");
+                    break;
+                }
+            }
+            for (int j = start+1; j < threadTraceData.length-start; j++) {
+                if (threadTraceData[j].endsWith(traceLinkEndSubString)) {
+                    value.append(">>>");
+                    value.append(threadTraceData[j]);
+                    break;
+                }else {
+                    value.append(">>>");
+                    value.append(threadTraceData[j]);
+                }
+            }
+            methodTraceLink.put(key, value.toString());
+        }
+        return methodTraceLink;
     }
 
     public static void lookFile(File file) {

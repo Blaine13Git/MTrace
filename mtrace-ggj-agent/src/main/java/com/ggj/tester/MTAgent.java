@@ -5,6 +5,7 @@ import java.io.PrintStream;
 import java.lang.instrument.Instrumentation;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 
 /**
  * @author muyi
@@ -12,6 +13,16 @@ import java.util.Date;
 public class MTAgent {
     private static String traceFilePath;
     private static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+    public HashMap<String, String> traceLinkKeyAndValuePool = new HashMap<>();
+    public static MTAgent mtAgent;
+
+    public static MTAgent getMTAgent() {
+        if (mtAgent == null) {
+            return mtAgent = new MTAgent();
+        } else {
+            return mtAgent;
+        }
+    }
 
     public static void premain(final String options, final Instrumentation instrumentation) {
         final AgentOptions agentOptions = new AgentOptions(options);

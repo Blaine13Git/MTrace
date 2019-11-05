@@ -5,6 +5,7 @@ import org.objectweb.asm.Opcodes;
 
 public class MethodAdapter extends MethodVisitor implements Opcodes {
     private String traceMethod;
+    private MTAgent mtAgent = MTAgent.getMTAgent();
 
     public MethodAdapter(final MethodVisitor mv, final String traceMethod) {
         super(ASM7, mv);
@@ -14,7 +15,6 @@ public class MethodAdapter extends MethodVisitor implements Opcodes {
     @Override
     public void visitMethodInsn(int opcode, String owner, String name, String descriptor, boolean isInterface) {
         if (!ClassTransformer.filterBySelf(owner) && !name.equals("<init>") && !name.equals("clinit") && traceMethod.equals("true")) {
-
             // System.err.println("thread id = " + Thread.currentThread().getId() + ",call method = " + owner + "." + name);
             mv.visitFieldInsn(GETSTATIC, "java/lang/System", "err", "Ljava/io/PrintStream;");
             mv.visitTypeInsn(NEW, "java/lang/StringBuilder");
