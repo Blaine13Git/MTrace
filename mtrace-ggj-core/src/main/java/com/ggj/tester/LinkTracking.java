@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -15,26 +16,15 @@ import java.util.Map;
 public class LinkTracking {
 
     public static void main(String[] args) {
-        String fileName = "/Users/changfeng/work/code/MTrace/out/artifacts/mtrace/2019-11-04_trade-service-consign-test_Trace.log";
-        String methodName = "getDeliverTimeConfig";
-
-        HashMap<String, String> methodLinkTrace = getMethodLinkTrace(fileName, methodName);
-        Iterator<Map.Entry<String, String>> iterator = methodLinkTrace.entrySet().iterator();
-        while (iterator.hasNext()) {
-            Map.Entry<String, String> next = iterator.next();
-            System.out.println(next.getKey());
-            System.out.println(next.getValue().replace(">>>", "\n"));
-        }
-
-//        File file = new File("/Users/changfeng/work/code/MTrace/out");
-//        lookFile(file);
-
+        String methodName = "ConsignDeliverTimeAPIImpl.createDeliverTimeConfig";
+        File file = new File("/Users/changfeng/work/code/MTrace/out");
+        lookTargetLinkTrace(file, methodName);
     }
 
     //清洗线程
-    private static HashMap<String, String> getTraceData(String originalData_file) {
+    private static HashMap<String, String> getTraceData(String fileName) {
         HashMap<String, String> traceMap = new HashMap<>();
-        try (BufferedReader bufferedReader = new BufferedReader(new FileReader(new File(originalData_file)))) {
+        try (BufferedReader bufferedReader = new BufferedReader(new FileReader(new File(fileName)))) {
             String linkTraceData = bufferedReader.readLine();
             while (linkTraceData != null) {
                 if (!linkTraceData.startsWith("Class-Load")) {
@@ -114,20 +104,30 @@ public class LinkTracking {
                     }
                 }
             }
-
             methodLinkTrace.put(key, value.toString());
         }
         return methodLinkTrace;
     }
 
-    public static void lookFile(File file) {
+    //获取文件遍历调用链路追踪
+    public static void lookTargetLinkTrace(File file, String methodName) {
+        ArrayList<String> fileList = new ArrayList<>();
         File[] fs = file.listFiles(); //遍历filePath下的文件和目录，放在File数组中
         for (File f : fs) {
             if (f.isDirectory()) {
-                lookFile(f); //递归子目录
+                lookTargetLinkTrace(f, methodName); //递归子目录
             }
-            if (!f.isDirectory() && f.getName().endsWith("_Trace.log"))//不是目录(即文件)，则打印
-                System.out.println(f);
+            if (!f.isDirectory() && f.getName().endsWith("_Trace.log")) {//不是目录(即文件)，则打印
+                fileList.add(f.getAbsolutePath());
+
+                HashMap<String, String> methodLinkTrace = getMethodLinkTrace(f.getAbsolutePath(), methodName);
+                Iterator<Map.Entry<String, String>> iterator = methodLinkTrace.entrySet().iterator();
+                while (iterator.hasNext()) {
+                    Map.Entry<String, String> next = iterator.next();
+                    System.out.println(next.getKey());
+                    System.out.println(next.getValue().replace(">>>", "\n"));
+                }
+            }
         }
     }
 
