@@ -5,7 +5,6 @@ import org.objectweb.asm.Opcodes;
 
 public class MethodAdapter extends MethodVisitor implements Opcodes {
     private String traceMethod;
-    private MTAgent mtAgent = MTAgent.getMTAgent();
 
     public MethodAdapter(final MethodVisitor mv, final String traceMethod) {
         super(ASM7, mv);
