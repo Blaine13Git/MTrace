@@ -73,8 +73,12 @@ public class ClassTransformer implements ClassFileTransformer {
         ClassReader cr = new ClassReader(classfileBuffer);
         ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
 
-        ClassVisitor cv = new ClassAdapter(cw, traceClass, traceMethod);
-        cr.accept(cv, 0);
+        try {
+            ClassVisitor cv = new ClassAdapter(cw, traceClass, traceMethod);
+            cr.accept(cv, 0);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return cw.toByteArray();
     }
 
