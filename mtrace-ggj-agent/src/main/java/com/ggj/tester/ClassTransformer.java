@@ -137,39 +137,49 @@ public class ClassTransformer implements ClassFileTransformer {
      * @return 返回true需要过滤
      */
     static boolean filterBySelf(String className) {
-        String[] filterData = new String[25];
-        filterData[0] = "com/intellij/";
-        filterData[1] = "com/beust/";
-        filterData[2] = "com/alibaba/";
-        filterData[3] = "com/aliyun/";
-        filterData[4] = "com/mysql/";
-        filterData[5] = "com/google/";
-        filterData[6] = "com/fasterxml/";
-        filterData[7] = "com/sun/";
-        filterData[8] = "com/github/";
-        filterData[9] = "com/zaxxer/";
-        filterData[10] = "sun/";
-        filterData[11] = "org/";
-        filterData[12] = "ch/";
-        filterData[13] = "javassist/";
-        filterData[14] = "io/";
-        filterData[15] = "springfox/";
-        filterData[16] = "redis/";
-        filterData[17] = "javax/";
-        filterData[18] = "au/";
-        filterData[19] = "java/";
-        filterData[20] = "rx/";
-        filterData[21] = "net/";
-        filterData[22] = "junit/";
-        filterData[23] = "com/ggj/qa/";
-        filterData[24] = "com/ggj/platform/";
 
-        for (int i = 0; i < filterData.length; i++) {
-            if (className.startsWith(filterData[i]) || className.contains("$$")) {
-                return true;
-            }
+        if (className.startsWith("com/ggj/") && !className.startsWith("com/ggj/platform") && !className.startsWith("com/ggj/qa")&& !className.contains("$$")) {
+            return false;
         }
-        return false;
+
+//        String[] filterData = new String[28];
+//        filterData[0] = "com/intellij/";
+//        filterData[1] = "com/beust/";
+//        filterData[2] = "com/alibaba/";
+//        filterData[3] = "com/aliyun/";
+//        filterData[4] = "com/mysql/";
+//        filterData[5] = "com/google/";
+//        filterData[6] = "com/fasterxml/";
+//        filterData[7] = "com/sun/";
+//        filterData[8] = "com/github/";
+//        filterData[9] = "com/zaxxer/";
+//        filterData[10] = "sun/";
+//        filterData[11] = "org/";
+//        filterData[12] = "ch/";
+//        filterData[13] = "javassist/";
+//        filterData[14] = "io/";
+//        filterData[15] = "springfox/";
+//        filterData[16] = "redis/";
+//        filterData[17] = "javax/";
+//        filterData[18] = "au/";
+//        filterData[19] = "java/";
+//        filterData[20] = "rx/";
+//        filterData[21] = "net/";
+//        filterData[22] = "junit/";
+//        filterData[23] = "bsh/";
+//        filterData[24] = "tk/";
+//        filterData[25] = "lombok/";
+//        filterData[26] = "lombok/";
+//        filterData[27] = "com/ggj/platform/";
+//        filterData[28] = "com/ggj/qa/";
+//
+//        for (int i = 0; i < filterData.length; i++) {
+//            if (className.startsWith(filterData[i]) || className.contains("$$")) {
+//                return true;
+//            }
+//        }
+
+        return true;
     }
 
     private boolean hasSourceLocation(final ProtectionDomain protectionDomain) {

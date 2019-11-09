@@ -1,28 +1,22 @@
 package com.ggj.tester;
 
+import org.springframework.stereotype.Service;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author muyi
  */
+@Service
 public class LinkTracking {
 
-    public static void main(String[] args) {
-        String methodName = "ConsignDeliverTimeAPIImpl.createDeliverTimeConfig";
-        File file = new File("/Users/changfeng/work/code/MTrace/out");
-        lookTargetLinkTrace(file, methodName);
-    }
-
     //清洗线程
-    private static HashMap<String, String> getTraceData(String fileName) {
+    private HashMap<String, String> getTraceData(String fileName) {
         HashMap<String, String> traceMap = new HashMap<>();
         try (BufferedReader bufferedReader = new BufferedReader(new FileReader(new File(fileName)))) {
             String linkTraceData = bufferedReader.readLine();
@@ -45,7 +39,7 @@ public class LinkTracking {
     }
 
     //清洗方法
-    private static HashMap<String, String> getMethodLinkTrace(String fileName, String methodName) {
+    private HashMap<String, String> getMethodLinkTrace(String fileName, String methodName) {
         HashMap<String, String> traceData = getTraceData(fileName);
         Iterator<Map.Entry<String, String>> iterator = traceData.entrySet().iterator();
         HashMap<String, String> methodLinkTrace = new HashMap<>();
@@ -110,9 +104,9 @@ public class LinkTracking {
     }
 
     //获取文件遍历调用链路追踪
-    public static void lookTargetLinkTrace(File file, String methodName) {
+    public void lookTargetLinkTrace(File file, String methodName) {
         ArrayList<String> fileList = new ArrayList<>();
-        File[] fs = file.listFiles(); //遍历filePath下的文件和目录，放在File数组中
+        File[] fs = file.listFiles(); //遍历file下的文件和目录，放在File数组中
         for (File f : fs) {
             if (f.isDirectory()) {
                 lookTargetLinkTrace(f, methodName); //递归子目录
@@ -129,6 +123,17 @@ public class LinkTracking {
                 }
             }
         }
+    }
+
+    private void getCaller() {
+        StackTraceElement stackTraceElement = Thread.currentThread().getStackTrace()[3];
+        System.out.println(stackTraceElement.getClassName() + "." + stackTraceElement.getMethodName());
+    }
+
+    public static void main(String[] args) {
+        String methodName = "InterceptorConfig.prepareInterceptor";
+        File file = new File("/Users/changfeng/work/code/MTrace/out");
+        new LinkTracking().lookTargetLinkTrace(file, methodName);
     }
 
 }

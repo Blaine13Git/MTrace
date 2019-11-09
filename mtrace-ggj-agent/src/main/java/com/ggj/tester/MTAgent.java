@@ -2,6 +2,7 @@ package com.ggj.tester;
 
 import java.io.FileOutputStream;
 import java.io.PrintStream;
+import java.lang.instrument.IllegalClassFormatException;
 import java.lang.instrument.Instrumentation;
 import java.text.SimpleDateFormat;
 import java.util.Date;
