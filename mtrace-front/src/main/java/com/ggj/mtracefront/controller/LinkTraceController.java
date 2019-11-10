@@ -41,6 +41,8 @@ public class LinkTraceController {
         ArrayList<HashMap<String, String>> traceLinks = new ArrayList<>();
 
         String methodName = linkTrackingVO.getMethodName();
+
+        System.out.println(linkTrackingVO.getMethodName());
         System.out.println(linkTrackingVO.getParameterName());
 
 //    public Result getLinkTraceData() {
@@ -58,28 +60,9 @@ public class LinkTraceController {
                 Map.Entry<String, String> next = iterator.next();
                 String value = next.getValue();
                 if (value != null && value.length() != 0) {
-
-                    System.out.println(value);
-
                     HashMap<String, String> linkTraceData = new HashMap<>();
                     linkTraceData.put("id", id + "");
                     linkTraceData.put("traceLinks", value);
-
-//                    String[] splitTrace = value.split("<br>");
-//                    int length = splitTrace.length;
-//                    for (int i = 0; i < length - 1; i++) {
-//                        String[] splitColumn = splitTrace[i].split(",");
-//                        if (splitColumn.length == 1) {
-//                            linkTraceData.put("timeSpend", splitTrace[length - 1]);
-//                            traceLinks.add(linkTraceData);
-//                        } else {
-//                            linkTraceData.put("timestamp", splitColumn[0]);
-//                            linkTraceData.put("threadId", splitColumn[1]);
-//                            linkTraceData.put("traceLinks", splitColumn[2]);
-//                        }
-//                    }
-
-//                    linkTraceData.put("timeSpend", splitTrace[length - 1].replace("timeSpend:", ""));
                     traceLinks.add(linkTraceData);
                 }
             }
@@ -87,8 +70,12 @@ public class LinkTraceController {
         return ResultFactory.buildSuccessResult(traceLinks);
     }
 
+    /**
+     * 遍历file下的文件和目录，放在File数组中
+     * @param file
+     */
     public void getFiles(File file) {
-        File[] fs = file.listFiles(); //遍历file下的文件和目录，放在File数组中
+        File[] fs = file.listFiles();
         for (File f : fs) {
             if (f.isDirectory()) {
                 getFiles(f); //递归子目录
