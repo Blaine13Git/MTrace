@@ -1,6 +1,7 @@
-package com.ggj.tester;
+package com.ggj.mtracefront.services;
 
-import org.springframework.stereotype.Service;
+
+import org.springframework.stereotype.Component;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -12,7 +13,7 @@ import java.util.*;
 /**
  * @author muyi
  */
-@Service
+@Component
 public class LinkTracking {
 
     //清洗线程
@@ -39,7 +40,7 @@ public class LinkTracking {
     }
 
     //清洗方法
-    private HashMap<String, String> getMethodLinkTrace(String fileName, String methodName) {
+    public HashMap<String, String> getMethodLinkTrace(String fileName, String methodName) {
         HashMap<String, String> traceData = getTraceData(fileName);
         Iterator<Map.Entry<String, String>> iterator = traceData.entrySet().iterator();
         HashMap<String, String> methodLinkTrace = new HashMap<>();
@@ -103,37 +104,26 @@ public class LinkTracking {
         return methodLinkTrace;
     }
 
-    //获取文件遍历调用链路追踪
-    public void lookTargetLinkTrace(File file, String methodName) {
-        ArrayList<String> fileList = new ArrayList<>();
-        File[] fs = file.listFiles(); //遍历file下的文件和目录，放在File数组中
-        for (File f : fs) {
-            if (f.isDirectory()) {
-                lookTargetLinkTrace(f, methodName); //递归子目录
-            }
-            if (!f.isDirectory() && f.getName().endsWith("_Trace.log")) {//不是目录(即文件)，则打印
-                fileList.add(f.getAbsolutePath());
-
-                HashMap<String, String> methodLinkTrace = getMethodLinkTrace(f.getAbsolutePath(), methodName);
-                Iterator<Map.Entry<String, String>> iterator = methodLinkTrace.entrySet().iterator();
-                while (iterator.hasNext()) {
-                    Map.Entry<String, String> next = iterator.next();
-                    System.out.println(next.getKey());
-                    System.out.println(next.getValue().replace(">>>", "\n"));
-                }
-            }
-        }
-    }
-
+    /**
+     * backup for ……
+     */
     private void getCaller() {
         StackTraceElement stackTraceElement = Thread.currentThread().getStackTrace()[3];
         System.out.println(stackTraceElement.getClassName() + "." + stackTraceElement.getMethodName());
     }
 
     public static void main(String[] args) {
-        String methodName = "InterceptorConfig.prepareInterceptor";
+        String methodName = "ConsignDeliverTimeAPIImpl.getDeliverTimeConfig";
+        String fileName="/Users/changfeng/work/code/MTrace/out/artifacts/mtrace/2019-11-04_trade-service-consign-test_Trace.log";
         File file = new File("/Users/changfeng/work/code/MTrace/out");
-        new LinkTracking().lookTargetLinkTrace(file, methodName);
+
+        HashMap<String, String> methodLinkTrace = new LinkTracking().getMethodLinkTrace(fileName, methodName);
+
+        Iterator<Map.Entry<String, String>> iterator = methodLinkTrace.entrySet().iterator();
+        while (iterator.hasNext()){
+            Map.Entry<String, String> next = iterator.next();
+            System.out.println(next.getValue().replace(">>>","\n"));
+        }
     }
 
 }
