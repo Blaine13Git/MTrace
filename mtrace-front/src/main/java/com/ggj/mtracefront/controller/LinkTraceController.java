@@ -38,8 +38,8 @@ public class LinkTraceController {
         }
 
         String methodName = linkTrackingVO.getMethodName();
-        System.out.println(linkTrackingVO.getMethodName());
-        System.out.println(linkTrackingVO.getParameterName());
+//        System.out.println(linkTrackingVO.getMethodName());
+//        System.out.println(linkTrackingVO.getParameterName());
 
         fileList = new ArrayList<>();
         ArrayList<HashMap<String, String>> traceLinks = new ArrayList<>();
@@ -49,13 +49,12 @@ public class LinkTraceController {
 //        LinkTracking linkTracking = new LinkTracking();
 
         getFiles(new File(filePath));
-
+        int id = 1;
         for (String fileName : fileList) {
             HashMap<String, String> methodLinkTrace = linkTracking.getMethodLinkTrace(fileName, methodName);
             Iterator<Map.Entry<String, String>> iterator = methodLinkTrace.entrySet().iterator();
-            int id = 0;
+
             while (iterator.hasNext()) {
-                id++;
                 Map.Entry<String, String> next = iterator.next();
                 String value = next.getValue();
                 if (value != null && value.length() != 0) {
@@ -63,6 +62,7 @@ public class LinkTraceController {
                     linkTraceData.put("id", id + "");
                     linkTraceData.put("traceLinks", value);
                     traceLinks.add(linkTraceData);
+                    id++;
                 }
             }
         }
@@ -71,6 +71,7 @@ public class LinkTraceController {
 
     /**
      * 遍历file下的文件和目录，放在File数组中
+     *
      * @param file
      */
     public void getFiles(File file) {
