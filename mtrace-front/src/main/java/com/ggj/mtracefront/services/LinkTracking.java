@@ -28,7 +28,7 @@ public class LinkTracking {
                     if (traceMap.get(splitTraceData[1]) == null) {
                         traceMap.put(splitTraceData[1], linkTraceData);
                     } else {
-                        traceMap.put(splitTraceData[1], traceMap.get(splitTraceData[1]) + ">>>" + linkTraceData);
+                        traceMap.put(splitTraceData[1], traceMap.get(splitTraceData[1]) + "<br>" + linkTraceData);
                     }
                 }
                 linkTraceData = bufferedReader.readLine();
@@ -53,7 +53,7 @@ public class LinkTracking {
             Map.Entry<String, String> next = iterator.next();
             String key = next.getKey();
             StringBuilder value = new StringBuilder();
-            String[] threadTraceData = next.getValue().split(">>>");
+            String[] threadTraceData = next.getValue().split("<br>");
 
             String linkTraceEndSubString = null;
             int start = 0;
@@ -63,7 +63,7 @@ public class LinkTracking {
                     if (value == null || value.length() == 0) {
                         value.append(threadTraceData[i]);
                     } else {
-                        value.append(">>>");
+                        value.append("<br>");
                         value.append(threadTraceData[i]);
                     }
                     String[] traceDataSplit = threadTraceData[i].split(", ");
@@ -79,7 +79,7 @@ public class LinkTracking {
                 if (linkTraceEndSubString != null && !value.toString().endsWith("ms-")) {
                     for (int j = start + 1; j < threadTraceData.length; j++) {
                         if (threadTraceData[j].endsWith(linkTraceEndSubString)) {
-                            value.append(">>>");
+                            value.append("<br>");
                             value.append(threadTraceData[j]);
                             i = j;
                             try {
@@ -89,11 +89,11 @@ public class LinkTracking {
                             }
 
                             String timeSpend = endTime - startTime + "ms";
-                            value.append(">>>");
+                            value.append("<br>");
                             value.append("timeSpend:-" + timeSpend + "-");
                             break;
                         } else {
-                            value.append(">>>");
+                            value.append("<br>");
                             value.append(threadTraceData[j]);
                         }
                     }
@@ -122,7 +122,7 @@ public class LinkTracking {
         Iterator<Map.Entry<String, String>> iterator = methodLinkTrace.entrySet().iterator();
         while (iterator.hasNext()){
             Map.Entry<String, String> next = iterator.next();
-            System.out.println(next.getValue().replace(">>>","\n"));
+            System.out.println(next.getValue().replace("<br>","\n"));
         }
     }
 
