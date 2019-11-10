@@ -37,13 +37,12 @@ public class LinkTraceController {
             return ResultFactory.buildFailResult(message);
         }
 
-        fileList = new ArrayList<>();
-        ArrayList<HashMap<String, String>> traceLinks = new ArrayList<>();
-
         String methodName = linkTrackingVO.getMethodName();
-
         System.out.println(linkTrackingVO.getMethodName());
         System.out.println(linkTrackingVO.getParameterName());
+
+        fileList = new ArrayList<>();
+        ArrayList<HashMap<String, String>> traceLinks = new ArrayList<>();
 
 //    public Result getLinkTraceData() {
 //        String methodName = "ConsignDeliverTimeAPIImpl.getDeliverTimeConfig";
