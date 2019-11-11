@@ -22,13 +22,16 @@ public class LinkTracking {
         try (BufferedReader bufferedReader = new BufferedReader(new FileReader(new File(fileName)))) {
             String linkTraceData = bufferedReader.readLine();
             while (linkTraceData != null) {
-                if (!linkTraceData.startsWith("Class-Load") && linkTraceData.contains(", threadId=" + threadId + ", ")) {
+                if (!linkTraceData.startsWith("Class-Load")) {
                     // 根据线程Id进行第一次数据清洗
                     String[] splitTraceData = linkTraceData.split(", ");
-                    if (traceMap.get(splitTraceData[1]) == null) {
-                        traceMap.put(splitTraceData[1], linkTraceData);
-                    } else {
-                        traceMap.put(splitTraceData[1], traceMap.get(splitTraceData[1]) + "<br>" + linkTraceData);
+
+                    if (splitTraceData[1].equals("threadId=" + threadId) || threadId == null || threadId.length() == 0) {
+                        if (traceMap.get(splitTraceData[1]) == null) {
+                            traceMap.put(splitTraceData[1], linkTraceData);
+                        } else {
+                            traceMap.put(splitTraceData[1], traceMap.get(splitTraceData[1]) + "<br>" + linkTraceData);
+                        }
                     }
                 }
                 linkTraceData = bufferedReader.readLine();
