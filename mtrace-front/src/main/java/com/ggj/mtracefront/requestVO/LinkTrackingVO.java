@@ -4,7 +4,9 @@ import lombok.Data;
 
 @Data
 public class LinkTrackingVO {
-    private String className;
     private String methodName;
+    private String threadID;
+    private String startTime;
+    private String endTime;
     private String parameterName;
 }

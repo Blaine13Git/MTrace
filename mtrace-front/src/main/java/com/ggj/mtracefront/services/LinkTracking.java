@@ -17,12 +17,12 @@ import java.util.*;
 public class LinkTracking {
 
     //清洗线程
-    private HashMap<String, String> getTraceData(String fileName) {
+    public HashMap<String, String> getThreadLinkTrace(String fileName, String threadId) {
         HashMap<String, String> traceMap = new HashMap<>();
         try (BufferedReader bufferedReader = new BufferedReader(new FileReader(new File(fileName)))) {
             String linkTraceData = bufferedReader.readLine();
             while (linkTraceData != null) {
-                if (!linkTraceData.startsWith("Class-Load")) {
+                if (!linkTraceData.startsWith("Class-Load") && linkTraceData.contains(", threadId=" + threadId + ", ")) {
                     // 根据线程Id进行第一次数据清洗
                     String[] splitTraceData = linkTraceData.split(", ");
                     if (traceMap.get(splitTraceData[1]) == null) {
@@ -40,8 +40,8 @@ public class LinkTracking {
     }
 
     //清洗方法
-    public HashMap<String, String> getMethodLinkTrace(String fileName, String methodName) {
-        HashMap<String, String> traceData = getTraceData(fileName);
+    public HashMap<String, String> getMethodLinkTrace(String fileName, String methodName, String threadId) {
+        HashMap<String, String> traceData = getThreadLinkTrace(fileName, threadId);
         Iterator<Map.Entry<String, String>> iterator = traceData.entrySet().iterator();
         HashMap<String, String> methodLinkTrace = new HashMap<>();
 
@@ -104,6 +104,12 @@ public class LinkTracking {
         return methodLinkTrace;
     }
 
+    //清洗调用的起点
+    public HashMap<String, String> getTargetStart(String targetMethodName) {
+//        HashMap<String,String>
+        return null;
+    }
+
     /**
      * backup for ……
      */
@@ -113,16 +119,28 @@ public class LinkTracking {
     }
 
     public static void main(String[] args) {
-        String methodName = "ConsignDeliverTimeAPIImpl.getDeliverTimeConfig";
-        String fileName="/Users/changfeng/work/code/MTrace/out/artifacts/mtrace/2019-11-04_trade-service-consign-test_Trace.log";
-        File file = new File("/Users/changfeng/work/code/MTrace/out");
+        String threadId = "1";
+        String fileName = "/Users/changfeng/work/code/MTrace/out/artifacts/mtrace/2019-11-04_trade-service-consign-test_Trace.log";
+//        String methodName = "ConsignDeliverTimeAPIImpl.getDeliverTimeConfig";
+//        File file = new File("/Users/changfeng/work/code/MTrace/out");
+//        HashMap<String, String> methodLinkTrace =null;
+//        try {
+//             methodLinkTrace = new LinkTracking().getMethodLinkTrace(fileName, methodName);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//
+//        Iterator<Map.Entry<String, String>> iterator = methodLinkTrace.entrySet().iterator();
+//        while (iterator.hasNext()) {
+//            Map.Entry<String, String> next = iterator.next();
+//            System.out.println(next.getValue().replace("<br>", "\n"));
+//        }
 
-        HashMap<String, String> methodLinkTrace = new LinkTracking().getMethodLinkTrace(fileName, methodName);
-
-        Iterator<Map.Entry<String, String>> iterator = methodLinkTrace.entrySet().iterator();
-        while (iterator.hasNext()){
+        Iterator<Map.Entry<String, String>> iterator = new LinkTracking().getThreadLinkTrace(fileName, threadId).entrySet().iterator();
+        while (iterator.hasNext()) {
             Map.Entry<String, String> next = iterator.next();
-            System.out.println(next.getValue().replace("<br>","\n"));
+            System.out.println(next.getKey());
+            System.out.println(next.getValue().replace("<br>", "\n"));
         }
     }
 

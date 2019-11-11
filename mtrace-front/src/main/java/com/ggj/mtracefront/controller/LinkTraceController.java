@@ -38,8 +38,9 @@ public class LinkTraceController {
         }
 
         String methodName = linkTrackingVO.getMethodName();
-//        System.out.println(linkTrackingVO.getMethodName());
-//        System.out.println(linkTrackingVO.getParameterName());
+        String threadId = linkTrackingVO.getThreadID();
+        String startTime = linkTrackingVO.getStartTime();
+        String endTime = linkTrackingVO.getEndTime();
 
         fileList = new ArrayList<>();
         ArrayList<HashMap<String, String>> traceLinks = new ArrayList<>();
@@ -49,11 +50,11 @@ public class LinkTraceController {
 //        LinkTracking linkTracking = new LinkTracking();
 
         getFiles(new File(filePath));
+
         int id = 1;
         for (String fileName : fileList) {
-            HashMap<String, String> methodLinkTrace = linkTracking.getMethodLinkTrace(fileName, methodName);
+            HashMap<String, String> methodLinkTrace = linkTracking.getMethodLinkTrace(fileName, methodName, threadId);
             Iterator<Map.Entry<String, String>> iterator = methodLinkTrace.entrySet().iterator();
-
             while (iterator.hasNext()) {
                 Map.Entry<String, String> next = iterator.next();
                 String value = next.getValue();
@@ -101,9 +102,10 @@ public class LinkTraceController {
     }
 
     public static void main(String[] args) {
+
 //        splitData(data);
 //        data_save.stream().forEach(dd -> System.out.println(dd));
-
+//
 //        ArrayList<HashMap<String, String>> linkTraceData = (ArrayList<HashMap<String, String>>) new LinkTraceController().getLinkTraceData().getData();
 //
 //        for (int i = 0; i < linkTraceData.size(); i++) {
@@ -115,10 +117,11 @@ public class LinkTraceController {
 //            }
 //            System.out.println("===================");
 //        }
-
-
+//
+//
 //        JSONArray array = JSONArray.parseArray(JSON.toJSONString(linkTraceData));
 //        System.out.println(array.toString());
+
 
     }
 
