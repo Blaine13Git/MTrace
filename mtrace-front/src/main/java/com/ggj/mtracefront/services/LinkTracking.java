@@ -17,7 +17,9 @@ import java.util.*;
 public class LinkTracking {
 
     //清洗线程
-    public HashMap<String, String> getThreadLinkTrace(String fileName, String threadId) {
+    public HashMap<String, String> getThreadLinkTrace(String fileName, String threadId, String startTime, String endTime) {
+
+
         HashMap<String, String> traceMap = new HashMap<>();
         try (BufferedReader bufferedReader = new BufferedReader(new FileReader(new File(fileName)))) {
             String linkTraceData = bufferedReader.readLine();
@@ -26,7 +28,7 @@ public class LinkTracking {
                     // 根据线程Id进行第一次数据清洗
                     String[] splitTraceData = linkTraceData.split(", ");
 
-                    if (splitTraceData[1].equals("threadId=" + threadId) || threadId == null || threadId.length() == 0) {
+                    if (isInTime(startTime, endTime, splitTraceData[0]) && splitTraceData[1].equals("threadId=" + threadId) || threadId == null || threadId.length() == 0) {
                         if (traceMap.get(splitTraceData[1]) == null) {
                             traceMap.put(splitTraceData[1], linkTraceData);
                         } else {
@@ -43,8 +45,8 @@ public class LinkTracking {
     }
 
     //清洗方法
-    public HashMap<String, String> getMethodLinkTrace(String fileName, String methodName, String threadId) {
-        HashMap<String, String> traceData = getThreadLinkTrace(fileName, threadId);
+    public HashMap<String, String> getMethodLinkTrace(String fileName, String methodName, String threadId, String inputStartTime, String inputEndTime) {
+        HashMap<String, String> traceData = getThreadLinkTrace(fileName, threadId, inputStartTime, inputEndTime);
         Iterator<Map.Entry<String, String>> iterator = traceData.entrySet().iterator();
         HashMap<String, String> methodLinkTrace = new HashMap<>();
 
@@ -113,38 +115,52 @@ public class LinkTracking {
         return null;
     }
 
+    private boolean isInTime(String startTime, String endTime, String targetTime) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+        long startDate = 0;
+        long endDate = 0;
+        long targetDate = 0;
+        try {
+            // 时间字段都空
+            if ((startTime == null || startTime.length() == 0) && (endTime == null || endTime.length() == 0)) {
+                return true;
+            }
+
+            // 开始时间空
+            if (startTime == null || startTime.length() == 0) {
+                startDate = 0;
+            } else {
+                startDate = dateFormat.parse(startTime).getTime();
+
+            }
+
+            // 结束时间空
+            if (endTime == null || endTime.length() == 0) {
+                endDate = new Date().getTime();
+            } else {
+                endDate = dateFormat.parse(endTime).getTime();
+            }
+
+            targetDate = dateFormat.parse(targetTime).getTime();
+
+            if ((targetDate - startDate) >= 0 && (endDate - targetDate) >= 0) {
+                return true;
+            } else {
+                return false;
+            }
+
+        } catch (ParseException e) {
+            e.printStackTrace();
+            return true;
+        }
+    }
+
     /**
      * backup for ……
      */
     private void getCaller() {
         StackTraceElement stackTraceElement = Thread.currentThread().getStackTrace()[3];
         System.out.println(stackTraceElement.getClassName() + "." + stackTraceElement.getMethodName());
-    }
-
-    public static void main(String[] args) {
-        String threadId = "1";
-        String fileName = "/Users/changfeng/work/code/MTrace/out/artifacts/mtrace/2019-11-04_trade-service-consign-test_Trace.log";
-//        String methodName = "ConsignDeliverTimeAPIImpl.getDeliverTimeConfig";
-//        File file = new File("/Users/changfeng/work/code/MTrace/out");
-//        HashMap<String, String> methodLinkTrace =null;
-//        try {
-//             methodLinkTrace = new LinkTracking().getMethodLinkTrace(fileName, methodName);
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//
-//        Iterator<Map.Entry<String, String>> iterator = methodLinkTrace.entrySet().iterator();
-//        while (iterator.hasNext()) {
-//            Map.Entry<String, String> next = iterator.next();
-//            System.out.println(next.getValue().replace("<br>", "\n"));
-//        }
-
-        Iterator<Map.Entry<String, String>> iterator = new LinkTracking().getThreadLinkTrace(fileName, threadId).entrySet().iterator();
-        while (iterator.hasNext()) {
-            Map.Entry<String, String> next = iterator.next();
-            System.out.println(next.getKey());
-            System.out.println(next.getValue().replace("<br>", "\n"));
-        }
     }
 
 }

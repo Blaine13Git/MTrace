@@ -1,9 +1,5 @@
 package com.ggj.mtracefront.controller;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
-import com.fasterxml.jackson.databind.util.JSONPObject;
 import com.ggj.mtracefront.requestVO.LinkTrackingVO;
 import com.ggj.mtracefront.result.Result;
 import com.ggj.mtracefront.result.ResultFactory;
@@ -53,15 +49,19 @@ public class LinkTraceController {
 
         int id = 1;
         for (String fileName : fileList) {
-            HashMap<String, String> methodLinkTrace = linkTracking.getMethodLinkTrace(fileName, methodName, threadId);
+            HashMap<String, String> methodLinkTrace = linkTracking.getMethodLinkTrace(fileName, methodName, threadId, startTime, endTime);
             Iterator<Map.Entry<String, String>> iterator = methodLinkTrace.entrySet().iterator();
             while (iterator.hasNext()) {
                 Map.Entry<String, String> next = iterator.next();
+
+                // 添加父方法
+
                 String value = next.getValue();
                 if (value != null && value.length() != 0) {
                     HashMap<String, String> linkTraceData = new HashMap<>();
                     linkTraceData.put("id", id + "");
                     linkTraceData.put("traceLinks", value);
+                    linkTraceData.put("", "");
                     traceLinks.add(linkTraceData);
                     id++;
                 }
@@ -87,41 +87,7 @@ public class LinkTraceController {
         }
     }
 
-    public static ArrayList<String> data_save = new ArrayList<>();
-    public static String data = "2019-11-04 13:06:55.108, thread id = 1, call method = com/ggj/trade/consign/api/ConsignDeliverTimeAPIImpl.getDeliverTimeConfig<br>2019-11-04 13:06:55.108, thread id = 1, call method = com/ggj/trade/consign/business/ConsignDeliverTimeBusiness.getDeliverTimeConfig<br>2019-11-04 13:06:55.108, thread id = 1, call method = com/ggj/trade/consign/service/ConsignDeliverTimeService.getByDeliverId<br>2019-11-04 13:06:55.108, thread id = 1, call method = com/ggj/trade/consign/mapper/DeliverTimeConfigMapper.getByDeliverId<br>2019-11-04 13:06:55.120, thread id = 1, return method = com/ggj/trade/consign/mapper/DeliverTimeConfigMapper.getByDeliverId<br>2019-11-04 13:06:55.120, thread id = 1, return method = com/ggj/trade/consign/service/ConsignDeliverTimeService.getByDeliverId<br>2019-11-04 13:06:55.122, thread id = 1, return method = com/ggj/trade/consign/business/ConsignDeliverTimeBusiness.getDeliverTimeConfig<br>2019-11-04 13:06:55.122, thread id = 1, call method = com/ggj/trade/consign/util/PlainResultUtil.buildSuccessResult<br>2019-11-04 13:06:55.122, thread id = 1, return method = com/ggj/trade/consign/util/PlainResultUtil.buildSuccessResult<br>2019-11-04 13:06:55.122, thread id = 1, return method = com/ggj/trade/consign/api/ConsignDeliverTimeAPIImpl.getDeliverTimeConfig<br>timeSpend:-14ms-<br>2019-11-04 13:55:13.229, thread id = 1, call method = com/ggj/trade/consign/api/ConsignDeliverTimeAPIImpl.getDeliverTimeConfig<br>2019-11-04 13:55:13.229, thread id = 1, call method = com/ggj/trade/consign/business/ConsignDeliverTimeBusiness.getDeliverTimeConfig<br>2019-11-04 13:55:13.230, thread id = 1, call method = com/ggj/trade/consign/service/ConsignDeliverTimeService.getByDeliverId<br>2019-11-04 13:55:13.230, thread id = 1, call method = com/ggj/trade/consign/mapper/DeliverTimeConfigMapper.getByDeliverId<br>2019-11-04 13:55:13.272, thread id = 1, return method = com/ggj/trade/consign/mapper/DeliverTimeConfigMapper.getByDeliverId<br>2019-11-04 13:55:13.272, thread id = 1, return method = com/ggj/trade/consign/service/ConsignDeliverTimeService.getByDeliverId<br>2019-11-04 13:55:13.274, thread id = 1, return method = com/ggj/trade/consign/business/ConsignDeliverTimeBusiness.getDeliverTimeConfig<br>2019-11-04 13:55:13.274, thread id = 1, call method = com/ggj/trade/consign/util/PlainResultUtil.buildSuccessResult<br>2019-11-04 13:55:13.274, thread id = 1, return method = com/ggj/trade/consign/util/PlainResultUtil.buildSuccessResult<br>2019-11-04 13:55:13.274, thread id = 1, return method = com/ggj/trade/consign/api/ConsignDeliverTimeAPIImpl.getDeliverTimeConfig<br>timeSpend:-45ms-<br>2019-11-04 13:55:13.229, thread id = 1, call method = com/ggj/trade/consign/api/ConsignDeliverTimeAPIImpl.getDeliverTimeConfig<br>2019-11-04 13:55:13.229, thread id = 1, call method = com/ggj/trade/consign/business/ConsignDeliverTimeBusiness.getDeliverTimeConfig<br>2019-11-04 13:55:13.230, thread id = 1, call method = com/ggj/trade/consign/service/ConsignDeliverTimeService.getByDeliverId<br>2019-11-04 13:55:13.230, thread id = 1, call method = com/ggj/trade/consign/mapper/DeliverTimeConfigMapper.getByDeliverId<br>2019-11-04 13:55:13.272, thread id = 1, return method = com/ggj/trade/consign/mapper/DeliverTimeConfigMapper.getByDeliverId<br>2019-11-04 13:55:13.272, thread id = 1, return method = com/ggj/trade/consign/service/ConsignDeliverTimeService.getByDeliverId<br>2019-11-04 13:55:13.274, thread id = 1, return method = com/ggj/trade/consign/business/ConsignDeliverTimeBusiness.getDeliverTimeConfig<br>2019-11-04 13:55:13.274, thread id = 1, call method = com/ggj/trade/consign/util/PlainResultUtil.buildSuccessResult<br>2019-11-04 13:55:13.274, thread id = 1, return method = com/ggj/trade/consign/util/PlainResultUtil.buildSuccessResult<br>2019-11-04 13:55:13.274, thread id = 1, return method = com/ggj/trade/consign/api/ConsignDeliverTimeAPIImpl.getDeliverTimeConfig<br>timeSpend:-45ms-";
-
-    public static void splitData(String data) {
-        if (data.contains("ms-<br>")) {
-            int index = data.lastIndexOf("ms-<br>");
-            data_save.add(data.substring(index + 6));
-            data = data.substring(0, index + 3);
-            splitData(data);
-        } else {
-            data_save.add(data);
-        }
-    }
-
     public static void main(String[] args) {
-
-//        splitData(data);
-//        data_save.stream().forEach(dd -> System.out.println(dd));
-//
-//        ArrayList<HashMap<String, String>> linkTraceData = (ArrayList<HashMap<String, String>>) new LinkTraceController().getLinkTraceData().getData();
-//
-//        for (int i = 0; i < linkTraceData.size(); i++) {
-//            Iterator<Map.Entry<String, String>> iterator = linkTraceData.get(i).entrySet().iterator();
-//            while (iterator.hasNext()){
-//                Map.Entry<String, String> next = iterator.next();
-//                System.out.println(next.getKey());
-//                System.out.println(next.getValue());
-//            }
-//            System.out.println("===================");
-//        }
-//
-//
-//        JSONArray array = JSONArray.parseArray(JSON.toJSONString(linkTraceData));
-//        System.out.println(array.toString());
-
 
     }
 
