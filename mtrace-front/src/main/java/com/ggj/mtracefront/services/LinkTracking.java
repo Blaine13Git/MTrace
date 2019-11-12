@@ -18,8 +18,6 @@ public class LinkTracking {
 
     //清洗线程
     public HashMap<String, String> getThreadLinkTrace(String fileName, String threadId, String startTime, String endTime) {
-
-
         HashMap<String, String> traceMap = new HashMap<>();
         try (BufferedReader bufferedReader = new BufferedReader(new FileReader(new File(fileName)))) {
             String linkTraceData = bufferedReader.readLine();
@@ -27,8 +25,7 @@ public class LinkTracking {
                 if (!linkTraceData.startsWith("Class-Load")) {
                     // 根据线程Id进行第一次数据清洗
                     String[] splitTraceData = linkTraceData.split(", ");
-
-                    if (isInTime(startTime, endTime, splitTraceData[0]) && splitTraceData[1].equals("threadId=" + threadId) || threadId == null || threadId.length() == 0) {
+                    if (isInTime(startTime, endTime, splitTraceData[0]) && (splitTraceData[1].equals("threadId=" + threadId) || threadId == null || threadId.length() == 0)) {
                         if (traceMap.get(splitTraceData[1]) == null) {
                             traceMap.put(splitTraceData[1], linkTraceData);
                         } else {
@@ -117,9 +114,9 @@ public class LinkTracking {
 
     private boolean isInTime(String startTime, String endTime, String targetTime) {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
-        long startDate = 0;
-        long endDate = 0;
-        long targetDate = 0;
+        long startDate;
+        long endDate;
+        long targetDate;
         try {
             // 时间字段都空
             if ((startTime == null || startTime.length() == 0) && (endTime == null || endTime.length() == 0)) {
@@ -131,7 +128,6 @@ public class LinkTracking {
                 startDate = 0;
             } else {
                 startDate = dateFormat.parse(startTime).getTime();
-
             }
 
             // 结束时间空
