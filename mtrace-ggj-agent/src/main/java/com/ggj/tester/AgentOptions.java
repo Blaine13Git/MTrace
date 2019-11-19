@@ -11,6 +11,7 @@ public final class AgentOptions {
     public static final String TRACECLASS = "traceClass";
     public static final String TRACEMETHOD = "traceMethod";
     public static final String TRACEFILEPATH = "traceFilePath";
+    public static final String DEBUG = "debug";
 
     public static final String INCLUDES = "includes";
     public static final String EXCLUDES = "excludes";
@@ -31,7 +32,7 @@ public final class AgentOptions {
     public static final int DEFAULT_PORT = 6300;
 
     private static final Collection<String> VALID_OPTIONS = Arrays.asList(
-            TRACECLASS, TRACEMETHOD, TRACEFILEPATH, INCLUDES, EXCLUDES, EXCLCLASSLOADER,
+            TRACECLASS, TRACEMETHOD, TRACEFILEPATH, DEBUG, INCLUDES, EXCLUDES, EXCLCLASSLOADER,
             INCLBOOTSTRAPCLASSES, INCLNOLOCATIONCLASSES,
             OUTPUT, PORT);
 
@@ -155,6 +156,14 @@ public final class AgentOptions {
 
     public void setTraceFilePath(final String traceFilePath) {
         setOption(TRACEFILEPATH, traceFilePath);
+    }
+
+    public String getDebug() {
+        return getOption(DEBUG, "false");
+    }
+
+    public void setDebug(final String debug) {
+        setOption(DEBUG, debug);
     }
 
     public OutputMode getOutput() {

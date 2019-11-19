@@ -1,5 +1,6 @@
 package com.ggj.tester;
 
+import jdk.internal.instrumentation.Logger;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
@@ -14,6 +15,7 @@ import java.security.ProtectionDomain;
 import static org.objectweb.asm.Opcodes.ASM7;
 
 public class ClassTransformer implements ClassFileTransformer {
+
     private static final String AGENT_PREFIX;
     private final WildcardMatcher includes;
     private final WildcardMatcher excludes;
@@ -23,6 +25,7 @@ public class ClassTransformer implements ClassFileTransformer {
 
     private final String traceClass;
     private final String traceMethod;
+    private final String debug;
 
     static {
         final String name = ClassTransformer.class.getName();
@@ -37,6 +40,9 @@ public class ClassTransformer implements ClassFileTransformer {
         inclNoLocationClasses = agentOptions.getInclNoLocationClasses();
         traceClass = agentOptions.getTraceClass();
         traceMethod = agentOptions.getTraceMethod();
+        debug = agentOptions.getDebug();
+
+
     }
 
     @Override
@@ -48,6 +54,10 @@ public class ClassTransformer implements ClassFileTransformer {
             byte[] classfileBuffer //原字节码
     ) throws IllegalClassFormatException {
 
+        if (debug.equals("true")) {
+            System.err.println("before filter -- className debug:" + className);
+        }
+
         // 一级过滤
         if (classBeingRedefined != null) return null;
 
@@ -56,10 +66,11 @@ public class ClassTransformer implements ClassFileTransformer {
 
         // 三级过滤
         if (filterBySelf(className)) return null;
-
+        if (debug.equals("true")) {
+            System.err.println("after filter -- className debug:" + className);
+        }
         // 注入
         return callAsmCoreApi(classfileBuffer, traceClass, traceMethod);
-//        return callASMTreeApi(classfileBuffer);
 
     }
 
@@ -72,9 +83,9 @@ public class ClassTransformer implements ClassFileTransformer {
     private byte[] callAsmCoreApi(byte[] classfileBuffer, String traceClass, String traceMethod) {
         ClassReader cr = new ClassReader(classfileBuffer);
         ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
-
+        ClassVisitor cv;
         try {
-            ClassVisitor cv = new ClassAdapter(cw, traceClass, traceMethod);
+            cv = new ClassAdapter(cw, traceClass, traceMethod);
             cr.accept(cv, 0);
         } catch (Exception e) {
             e.printStackTrace();
@@ -138,7 +149,8 @@ public class ClassTransformer implements ClassFileTransformer {
      */
     static boolean filterBySelf(String className) {
 
-        if (className.startsWith("com/ggj/") && !className.startsWith("com/ggj/platform") && !className.startsWith("com/ggj/qa")&& !className.contains("$$")) {
+        if (className.startsWith("com/ggj/")  && !className.startsWith("com/ggj/qa") && !className.contains("$$")) {
+            // && className.startsWith("com/ggj/platform")
             return false;
         }
 
