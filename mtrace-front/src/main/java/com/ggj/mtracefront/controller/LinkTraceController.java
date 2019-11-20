@@ -41,10 +41,6 @@ public class LinkTraceController {
         fileList = new ArrayList<>();
         ArrayList<HashMap<String, String>> traceLinks = new ArrayList<>();
 
-//    public Result getLinkTraceData() {
-//        String methodName = "ConsignDeliverTimeAPIImpl.getDeliverTimeConfig";
-//        LinkTracking linkTracking = new LinkTracking();
-
         getFiles(new File(filePath));
 
         int id = 1;
@@ -53,9 +49,6 @@ public class LinkTraceController {
             Iterator<Map.Entry<String, String>> iterator = methodLinkTrace.entrySet().iterator();
             while (iterator.hasNext()) {
                 Map.Entry<String, String> next = iterator.next();
-
-                // 添加父方法
-                // 18356461107
 
                 String value = next.getValue();
                 if (value != null && value.length() != 0) {

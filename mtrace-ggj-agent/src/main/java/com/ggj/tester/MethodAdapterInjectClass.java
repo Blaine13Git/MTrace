@@ -12,18 +12,6 @@ public class MethodAdapterInjectClass extends MethodVisitor implements Opcodes {
         this.traceMethod = traceMethod;
     }
 
-//    @Override
-//    public void visitMethodInsn(int opcode, String owner, String name, String descriptor, boolean isInterface) {
-//        if (!ClassTransformer.filterBySelf(owner) && !name.equals("<init>") && !name.equals("clinit") && traceMethod.equals("true")) {
-//
-//            // 方法调用
-//            mv.visitMethodInsn(opcode, owner, name, descriptor, isInterface);
-//
-//        } else {
-//            mv.visitMethodInsn(opcode, owner, name, descriptor, isInterface);
-//        }
-//    }
-
     @Override
     public void visitCode() {
         mv.visitCode();
