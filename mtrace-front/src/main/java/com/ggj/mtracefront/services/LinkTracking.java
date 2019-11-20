@@ -18,16 +18,13 @@ public class LinkTracking {
 
     //清洗线程
     public HashMap<String, String> getThreadLinkTrace(String fileName, String threadId, String startTime, String endTime) {
-        String linkTraceDataLast = null;
-        String linkTraceData = null;
         HashMap<String, String> traceMap = new HashMap<>();
         try (BufferedReader bufferedReader = new BufferedReader(new FileReader(new File(fileName)))) {
-            linkTraceData = bufferedReader.readLine();
+            String linkTraceData = bufferedReader.readLine();
             while (linkTraceData != null) {
                 if (!linkTraceData.startsWith("Class-Load")) {
                     // 根据线程Id进行第一次数据清洗
                     String[] splitTraceData = linkTraceData.split(",");
-                    linkTraceDataLast = splitTraceData[1] + "," + splitTraceData[2];
                     if (isInTime(startTime, endTime, splitTraceData[0]) && (splitTraceData[1].equals("ThreadId=" + threadId) || threadId == null || threadId.length() == 0)) {
                         if (traceMap.get(splitTraceData[1]) == null) {
                             traceMap.put(splitTraceData[1], linkTraceData);
@@ -37,21 +34,9 @@ public class LinkTracking {
                     }
                 }
                 linkTraceData = bufferedReader.readLine();
-                // 去重
-                boolean flag = true;
-                while (flag && linkTraceData != null) {
-                    String[] split = linkTraceData.split(",");
-                    if ((split.length == 3) && ((split[1] + "," + split[2]).equals(linkTraceDataLast))) {
-                        linkTraceData = bufferedReader.readLine();
-                        flag = true;
-                    } else {
-                        flag = false;
-                    }
-                }
             }
         } catch (Exception e) {
             e.printStackTrace();
-            System.out.println("linkTraceData:" + linkTraceData);
         }
         return traceMap;
     }
@@ -121,12 +106,6 @@ public class LinkTracking {
         return methodLinkTrace;
     }
 
-    //清洗调用的起点
-    public HashMap<String, String> getTargetStart(String targetMethodName) {
-//        HashMap<String,String>
-        return null;
-    }
-
     private boolean isInTime(String startTime, String endTime, String targetTime) {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
         long startDate;
@@ -165,13 +144,4 @@ public class LinkTracking {
             return true;
         }
     }
-
-    /**
-     * backup for ……
-     */
-    private void getCaller() {
-        StackTraceElement stackTraceElement = Thread.currentThread().getStackTrace()[3];
-        System.out.println(stackTraceElement.getClassName() + "." + stackTraceElement.getMethodName());
-    }
-
 }
