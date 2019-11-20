@@ -51,12 +51,6 @@ public class ClassTransformer implements ClassFileTransformer {
             byte[] classfileBuffer //原字节码
     ) throws IllegalClassFormatException {
 
-        try {
-            loader.loadClass("com.ggj.tester.ClassOfInject");
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-
         if (debug.equals("true")) {
             System.err.println("before filter -- className debug:" + className);
         }
@@ -69,6 +63,13 @@ public class ClassTransformer implements ClassFileTransformer {
 
         // 三级过滤
         if (filterBySelf(className)) return null;
+
+        try {
+            loader.loadClass("com.ggj.tester.ClassOfInject");
+//            new InjectClassloader().findClass("com.ggj.tester.ClassOfInject");
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
 
         // 注入
         return callAsmCoreApi(classfileBuffer, traceClass, traceMethod);
@@ -149,7 +150,7 @@ public class ClassTransformer implements ClassFileTransformer {
      * @return 返回true需要过滤
      */
     static boolean filterBySelf(String className) {
-        if (className.startsWith("com/ggj/") && !className.startsWith("com/ggj/qa/") && !className.startsWith("com/ggj/tester/")&& !className.startsWith("com/ggj/platform/") && !className.contains("$$")) {
+        if (className.startsWith("com/ggj/") && !className.startsWith("com/ggj/qa/") && !className.startsWith("com/ggj/tester/") && !className.startsWith("com/ggj/platform/") && !className.contains("$$")) {
             return false;
         }
 //        String[] filterData = new String[28];

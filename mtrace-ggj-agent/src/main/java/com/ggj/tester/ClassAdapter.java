@@ -53,7 +53,7 @@ public class ClassAdapter extends ClassVisitor implements Opcodes {
     ) {
         MethodVisitor mv = cv.visitMethod(access, name, desc, signature, exceptions);
         methodName = name;
-        if (!isInterface && mv != null && !name.equals("<init>") && !name.equals("<clinit>")) {
+        if (!isInterface && mv != null && !name.equals("<init>") && !name.equals("<clinit>") ) {
             mv = new MethodAdapterInjectClass(mv, traceMethod);
         }
         return mv;

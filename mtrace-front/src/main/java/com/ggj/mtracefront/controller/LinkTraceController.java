@@ -55,6 +55,7 @@ public class LinkTraceController {
                 Map.Entry<String, String> next = iterator.next();
 
                 // 添加父方法
+                // 18356461107
 
                 String value = next.getValue();
                 if (value != null && value.length() != 0) {
@@ -85,10 +86,6 @@ public class LinkTraceController {
                 fileList.add(f.getAbsolutePath());
             }
         }
-    }
-
-    public static void main(String[] args) {
-
     }
 
 }

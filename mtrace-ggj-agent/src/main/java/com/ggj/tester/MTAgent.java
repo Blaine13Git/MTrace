@@ -4,9 +4,6 @@ import java.io.FileOutputStream;
 import java.io.PrintStream;
 import java.lang.instrument.Instrumentation;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-
-import static com.sun.xml.internal.ws.spi.db.BindingContextFactory.LOGGER;
 
 /**
  * @author muyi
@@ -33,6 +30,8 @@ public class MTAgent {
 //            String traceFile = traceFilePath + "/" + formatDate + "_" + projectName + "_Trace.log";
 //            redirectOutPut(traceFile);
 //        }
+
+//        instrumentation.
 
         //向instrumentation中添加一个类的转换器,用于转换类的行为.
         instrumentation.addTransformer(new ClassTransformer(agentOptions));
