@@ -1,6 +1,5 @@
 package com.ggj.tester;
 
-import jdk.internal.instrumentation.Logger;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
@@ -41,8 +40,6 @@ public class ClassTransformer implements ClassFileTransformer {
         traceClass = agentOptions.getTraceClass();
         traceMethod = agentOptions.getTraceMethod();
         debug = agentOptions.getDebug();
-
-
     }
 
     @Override
@@ -53,6 +50,12 @@ public class ClassTransformer implements ClassFileTransformer {
             ProtectionDomain protectionDomain, //保护域
             byte[] classfileBuffer //原字节码
     ) throws IllegalClassFormatException {
+
+        try {
+            loader.loadClass("com.ggj.tester.ClassOfInject");
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
 
         if (debug.equals("true")) {
             System.err.println("before filter -- className debug:" + className);
@@ -66,9 +69,7 @@ public class ClassTransformer implements ClassFileTransformer {
 
         // 三级过滤
         if (filterBySelf(className)) return null;
-        if (debug.equals("true")) {
-            System.err.println("after filter -- className debug:" + className);
-        }
+
         // 注入
         return callAsmCoreApi(classfileBuffer, traceClass, traceMethod);
 
@@ -148,12 +149,9 @@ public class ClassTransformer implements ClassFileTransformer {
      * @return 返回true需要过滤
      */
     static boolean filterBySelf(String className) {
-
-        if (className.startsWith("com/ggj/")  && !className.startsWith("com/ggj/qa") && !className.contains("$$")) {
-            // && className.startsWith("com/ggj/platform")
+        if (className.startsWith("com/ggj/") && !className.startsWith("com/ggj/qa/") && !className.startsWith("com/ggj/tester/")&& !className.startsWith("com/ggj/platform/") && !className.contains("$$")) {
             return false;
         }
-
 //        String[] filterData = new String[28];
 //        filterData[0] = "com/intellij/";
 //        filterData[1] = "com/beust/";
