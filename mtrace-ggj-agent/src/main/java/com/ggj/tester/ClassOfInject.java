@@ -5,8 +5,9 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class ClassOfInject {
-    private SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+    private String fileName;
     private static ClassOfInject classOfInject;
+    private SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
 
     public static ClassOfInject getInstance() {
         if (classOfInject == null) {
@@ -17,33 +18,39 @@ public class ClassOfInject {
     }
 
     /**
-     * @param fileName
      * @author 慕一
      */
-    public void linkTrackingCall(String fileName) {
-        // 获取调用者的类名和方法名称
-        StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
+    public void linkTrackingCall() {
+        Thread thread = Thread.currentThread();
+        StackTraceElement[] stackTrace = thread.getStackTrace();
         String className = stackTrace[2].getClassName();
         String methodName = stackTrace[2].getMethodName();
 
-        //获取调用者的父类
+        long id = thread.getId();
 
-        long id = Thread.currentThread().getId();
         String now = simpleDateFormat.format(new Date().getTime());
+        String today = now.substring(0, now.lastIndexOf(" "));
+
+        String userDir = System.getProperty("user.dir");
+        String projectName = userDir.substring(userDir.lastIndexOf("/") + 1);
+
+        fileName = today + "_" + projectName + "_Trace.log";
+
         writeContent(fileName, now + ", ThreadId=" + id + ", Call=" + className + "." + methodName);
     }
 
     /**
-     * @param fileName
      * @author 慕一
      */
-    public void linkTrackingReturn( String fileName) {
-        StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
+    public void linkTrackingReturn() {
+        String now = simpleDateFormat.format(new Date().getTime());
+
+        Thread thread = Thread.currentThread();
+        long id = thread.getId();
+
+        StackTraceElement[] stackTrace = thread.getStackTrace();
         String className = stackTrace[2].getClassName();
         String methodName = stackTrace[2].getMethodName();
-
-        long id = Thread.currentThread().getId();
-        String now = simpleDateFormat.format(new Date().getTime());
         writeContent(fileName, now + ", ThreadId=" + id + ", Return=" + className + "." + methodName);
     }
 

@@ -13,17 +13,14 @@ public class ClassAdapter extends ClassVisitor implements Opcodes {
     protected boolean isInterface;
     protected String methodName;
     private String traceClass;
-    private String traceMethod;
 
 
     public ClassAdapter(
             final ClassVisitor cv,
-            String traceClass,
-            String traceMethod
+            String traceClass
     ) {
         super(ASM7, cv);
         this.traceClass = traceClass;
-        this.traceMethod = traceMethod;
     }
 
     @Override
@@ -39,7 +36,7 @@ public class ClassAdapter extends ClassVisitor implements Opcodes {
         isInterface = (access & Opcodes.ACC_INTERFACE) != 0;
 
 //        if (!isInterface && traceClass.equals("true")) {
-//            System.err.println("Class-Load:" + className);
+//
 //        }
     }
 
@@ -53,8 +50,8 @@ public class ClassAdapter extends ClassVisitor implements Opcodes {
     ) {
         MethodVisitor mv = cv.visitMethod(access, name, desc, signature, exceptions);
         methodName = name;
-        if (!isInterface && mv != null && !name.equals("<init>") && !name.equals("<clinit>") ) {
-            mv = new MethodAdapterInjectClass(mv, traceMethod);
+        if (!isInterface && mv != null && !name.equals("<init>") && !name.equals("<clinit>")) {
+            mv = new MethodAdapterInjectClass(mv);
         }
         return mv;
     }
