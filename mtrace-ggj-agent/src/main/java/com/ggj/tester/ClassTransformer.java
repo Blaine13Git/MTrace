@@ -23,7 +23,7 @@ public class ClassTransformer implements ClassFileTransformer {
     private final boolean inclNoLocationClasses;
 
     private final String traceClass;
-    private final String traceMethod;
+    private final String filePath;
     private final String debug;
 
     static {
@@ -38,7 +38,7 @@ public class ClassTransformer implements ClassFileTransformer {
         inclBootstrapClasses = agentOptions.getInclBootstrapClasses();
         inclNoLocationClasses = agentOptions.getInclNoLocationClasses();
         traceClass = agentOptions.getTraceClass();
-        traceMethod = agentOptions.getTraceMethod();
+        filePath = agentOptions.getTraceFilePath();
         debug = agentOptions.getDebug();
     }
 
@@ -72,8 +72,7 @@ public class ClassTransformer implements ClassFileTransformer {
         }
 
         // 注入
-        return callAsmCoreApi(classfileBuffer, traceClass, traceMethod);
-
+        return callAsmCoreApi(classfileBuffer, traceClass, filePath);
     }
 
     /**
@@ -82,12 +81,12 @@ public class ClassTransformer implements ClassFileTransformer {
      * @param classfileBuffer
      * @return
      */
-    private byte[] callAsmCoreApi(byte[] classfileBuffer, String traceClass, String traceMethod) {
+    private byte[] callAsmCoreApi(byte[] classfileBuffer, String traceClass, String filePath) {
         ClassReader cr = new ClassReader(classfileBuffer);
         ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
         ClassVisitor cv;
         try {
-            cv = new ClassAdapter(cw, traceClass, traceMethod);
+            cv = new ClassAdapter(cw, traceClass, filePath);
             cr.accept(cv, 0);
         } catch (Exception e) {
             e.printStackTrace();

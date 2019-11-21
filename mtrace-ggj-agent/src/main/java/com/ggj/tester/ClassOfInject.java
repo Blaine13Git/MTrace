@@ -20,7 +20,7 @@ public class ClassOfInject {
     /**
      * @author 慕一
      */
-    public void linkTrackingCall() {
+    public void linkTrackingCall(String filePath) {
         Thread thread = Thread.currentThread();
         StackTraceElement[] stackTrace = thread.getStackTrace();
         String className = stackTrace[2].getClassName();
@@ -34,15 +34,18 @@ public class ClassOfInject {
         String userDir = System.getProperty("user.dir");
         String projectName = userDir.substring(userDir.lastIndexOf("/") + 1);
 
-        fileName = today + "_" + projectName + "_Trace.log";
-
+        if (filePath == null || filePath.length() == 0) {
+            fileName = today + "_" + projectName + "_Trace.log";
+        } else {
+            fileName = filePath + "/" + today + "_" + projectName + "_Trace.log";
+        }
         writeContent(fileName, now + ", ThreadId=" + id + ", Call=" + className + "." + methodName);
     }
 
     /**
      * @author 慕一
      */
-    public void linkTrackingReturn() {
+    public void linkTrackingReturn(String filePath) {
         String now = simpleDateFormat.format(new Date().getTime());
 
         Thread thread = Thread.currentThread();
