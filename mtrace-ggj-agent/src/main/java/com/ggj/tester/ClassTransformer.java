@@ -149,7 +149,14 @@ public class ClassTransformer implements ClassFileTransformer {
      * @return 返回true需要过滤
      */
     static boolean filterBySelf(String className) {
-        if (className.startsWith("com/ggj/") && !className.startsWith("com/ggj/qa/") && !className.startsWith("com/ggj/tester/") && !className.startsWith("com/ggj/platform/") && !className.contains("$$")) {
+        if (
+                className.startsWith("com/ggj/") &&
+                        !className.startsWith("com/ggj/qa/") &&
+                        !className.startsWith("com/ggj/tester/") &&
+                        !className.startsWith("com/ggj/platform/") &&
+                        !className.startsWith("com/ggj/business/") &&
+                        !className.contains("$$")
+        ) {
             return false;
         }
         return true;

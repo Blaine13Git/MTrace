@@ -19,7 +19,7 @@ import java.util.Map;
 @RestController
 public class LinkTraceController {
 
-    private static final String filePath = "/Users/changfeng/work/code/MTrace/out";
+    private static final String filePath = "/Users/changfeng/work/traceLogs";
     ArrayList<String> fileList;
 
     @Autowired
@@ -34,6 +34,11 @@ public class LinkTraceController {
         }
 
         String methodName = linkTrackingVO.getMethodName();
+
+        if (methodName==null || methodName.length()==0){
+            return ResultFactory.buildFailResult("方法名称不能空");
+        }
+
         String threadId = linkTrackingVO.getThreadID();
         String startTime = linkTrackingVO.getStartTime();
         String endTime = linkTrackingVO.getEndTime();

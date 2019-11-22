@@ -65,10 +65,8 @@ public class ClassOfInject {
      * @author 慕一
      */
     private static void writeContent(String fileName, String content) {
-        try {
-            FileWriter fw = new FileWriter(fileName, true);
+        try (FileWriter fw = new FileWriter(fileName, true)) {
             fw.write(content + "\n");
-            fw.close();
         } catch (Exception e) {
             System.out.println("文件写入失败！");
             e.printStackTrace();
