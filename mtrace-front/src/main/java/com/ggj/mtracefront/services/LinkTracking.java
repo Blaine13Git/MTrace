@@ -3,9 +3,7 @@ package com.ggj.mtracefront.services;
 
 import org.springframework.stereotype.Component;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
+import java.io.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -16,41 +14,80 @@ import java.util.*;
 @Component
 public class LinkTracking {
 
-    //清洗线程
-    public HashMap<String, String> getThreadLinkTrace(String fileName, String threadId, String startTime, String endTime) {
-        HashMap<String, String> traceMap = new HashMap<>();
-        try (BufferedReader bufferedReader = new BufferedReader(new FileReader(new File(fileName)))) {
-            String linkTraceData = bufferedReader.readLine();
+    // 获取目标数据
+    public ArrayList<String> getTargetData(String fileName, String methodName, String threadId, String startTime, String endTime) {
+        ArrayList<String> dataList = new ArrayList();
+        try (BufferedReader reader = new BufferedReader(new FileReader(fileName), 500 * 1024)) {
+            String linkTraceData = reader.readLine();
+            int index = linkTraceData.lastIndexOf("ThreadId=");
             while (linkTraceData != null) {
-                if (!linkTraceData.startsWith("Class-Load")) {
-                    // 根据线程Id进行第一次数据清洗
-                    String[] splitTraceData = linkTraceData.split(", ");
-                    if (isInTime(startTime, endTime, splitTraceData[0]) && (splitTraceData[1].equals("threadId=" + threadId) || threadId == null || threadId.length() == 0)) {
-                        if (traceMap.get(splitTraceData[1]) == null) {
-                            traceMap.put(splitTraceData[1], linkTraceData);
-                        } else {
-                            traceMap.put(splitTraceData[1], traceMap.get(splitTraceData[1]) + "<br>" + linkTraceData);
+                if (
+                        linkTraceData.contains(methodName) &&
+                                linkTraceData.contains("Call=") &&
+                                isInTime(startTime, endTime, linkTraceData.substring(0, linkTraceData.lastIndexOf(", ThreadId="))) &&
+                                (linkTraceData.substring((index + 9), linkTraceData.lastIndexOf(", ")).equals(threadId) || threadId == null || threadId.length() == 0)
+                ) {
+                    dataList.add(linkTraceData);
+                    String linkTraceData_Target = reader.readLine();
+                    String start_subString = linkTraceData.substring(index);
+                    int countNum = 1;
+                    int findNum = 0;
+                    boolean flag = true;
+                    while (flag) {
+                        if ((linkTraceData_Target.substring((index + 9), linkTraceData_Target.lastIndexOf(", ")).equals(threadId) || threadId == null || threadId.length() == 0)) {
+                            String target_substring = linkTraceData_Target.substring(linkTraceData_Target.lastIndexOf("ThreadId="));
+                            if (target_substring.replace("Return=", "Call=").equals(start_subString)) {
+                                findNum++;
+                                dataList.add(linkTraceData_Target);
+                            } else if (target_substring.equals(start_subString)) {
+                                countNum++;
+                                dataList.add(linkTraceData_Target);
+                            } else {
+                                dataList.add(linkTraceData_Target);
+                            }
+                            if (countNum == findNum) {
+                                flag = false;
+                            }
+                        }
+                        linkTraceData_Target = reader.readLine();
+                        if (linkTraceData_Target == null || linkTraceData_Target.length() == 0) {
+                            flag = false;
                         }
                     }
                 }
-                linkTraceData = bufferedReader.readLine();
+                linkTraceData = reader.readLine();
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return traceMap;
+        return dataList;
     }
 
-    //清洗方法
+    // 获取线程数据
+    public HashMap<String, String> getThreadData(ArrayList<String> data) {
+        HashMap<String, String> targetData = new HashMap<>();
+        for (int i = 0; i < data.size(); i++) {
+            String tempData = data.get(i);
+            String[] splitTraceData = tempData.split(",");
+            if (targetData.get(splitTraceData[1]) == null) {
+                targetData.put(splitTraceData[1], tempData);
+            } else {
+                targetData.put(splitTraceData[1], targetData.get(splitTraceData[1]) + "<br>" + tempData);
+            }
+        }
+        return targetData;
+    }
+
+    // 清洗方法
     public HashMap<String, String> getMethodLinkTrace(String fileName, String methodName, String threadId, String inputStartTime, String inputEndTime) {
-        HashMap<String, String> traceData = getThreadLinkTrace(fileName, threadId, inputStartTime, inputEndTime);
+        ArrayList<String> targetData = getTargetData(fileName, methodName, threadId, inputStartTime, inputEndTime);
+        HashMap<String, String> traceData = getThreadData(targetData);
         Iterator<Map.Entry<String, String>> iterator = traceData.entrySet().iterator();
         HashMap<String, String> methodLinkTrace = new HashMap<>();
 
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
         long startTime = 0;
         long endTime = 0;
-
         while (iterator.hasNext()) {
             Map.Entry<String, String> next = iterator.next();
             String key = next.getKey();
@@ -69,7 +106,7 @@ public class LinkTracking {
                         value.append(threadTraceData[i]);
                     }
                     String[] traceDataSplit = threadTraceData[i].split(", ");
-                    linkTraceEndSubString = traceDataSplit[1] + ", " + traceDataSplit[2].replace("call", "return");
+                    linkTraceEndSubString = traceDataSplit[1] + ", " + traceDataSplit[2].replace("Call", "Return");
 
                     try {
                         startTime = dateFormat.parse(traceDataSplit[0]).getTime();
@@ -106,12 +143,7 @@ public class LinkTracking {
         return methodLinkTrace;
     }
 
-    //清洗调用的起点
-    public HashMap<String, String> getTargetStart(String targetMethodName) {
-//        HashMap<String,String>
-        return null;
-    }
-
+    // 时间处理
     private boolean isInTime(String startTime, String endTime, String targetTime) {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
         long startDate;
@@ -138,25 +170,14 @@ public class LinkTracking {
             }
 
             targetDate = dateFormat.parse(targetTime).getTime();
-
             if ((targetDate - startDate) >= 0 && (endDate - targetDate) >= 0) {
                 return true;
             } else {
                 return false;
             }
-
         } catch (ParseException e) {
             e.printStackTrace();
             return true;
         }
     }
-
-    /**
-     * backup for ……
-     */
-    private void getCaller() {
-        StackTraceElement stackTraceElement = Thread.currentThread().getStackTrace()[3];
-        System.out.println(stackTraceElement.getClassName() + "." + stackTraceElement.getMethodName());
-    }
-
 }
