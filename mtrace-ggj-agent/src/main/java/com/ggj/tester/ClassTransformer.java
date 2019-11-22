@@ -6,17 +6,15 @@ import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.*;
 
-import java.io.FileOutputStream;
-import java.io.PrintStream;
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
 import java.security.CodeSource;
 import java.security.ProtectionDomain;
-import java.util.ArrayList;
 
 import static org.objectweb.asm.Opcodes.ASM7;
 
 public class ClassTransformer implements ClassFileTransformer {
+
     private static final String AGENT_PREFIX;
     private final WildcardMatcher includes;
     private final WildcardMatcher excludes;
@@ -24,17 +22,24 @@ public class ClassTransformer implements ClassFileTransformer {
     private final boolean inclBootstrapClasses;
     private final boolean inclNoLocationClasses;
 
+    private final String traceClass;
+    private final String filePath;
+    private final String debug;
+
     static {
         final String name = ClassTransformer.class.getName();
         AGENT_PREFIX = toVMName(name.substring(0, name.lastIndexOf('.')));
     }
 
-    public ClassTransformer(final AgentOptions options) {
-        includes = new WildcardMatcher(toVMName(options.getIncludes()));
-        excludes = new WildcardMatcher(toVMName(options.getExcludes()));
-        exclClassloader = new WildcardMatcher(options.getExclClassloader());
-        inclBootstrapClasses = options.getInclBootstrapClasses();
-        inclNoLocationClasses = options.getInclNoLocationClasses();
+    public ClassTransformer(final AgentOptions agentOptions) {
+        includes = new WildcardMatcher(toVMName(agentOptions.getIncludes()));
+        excludes = new WildcardMatcher(toVMName(agentOptions.getExcludes()));
+        exclClassloader = new WildcardMatcher(agentOptions.getExclClassloader());
+        inclBootstrapClasses = agentOptions.getInclBootstrapClasses();
+        inclNoLocationClasses = agentOptions.getInclNoLocationClasses();
+        traceClass = agentOptions.getTraceClass();
+        filePath = agentOptions.getTraceFilePath();
+        debug = agentOptions.getDebug();
     }
 
     @Override
@@ -46,51 +51,28 @@ public class ClassTransformer implements ClassFileTransformer {
             byte[] classfileBuffer //原字节码
     ) throws IllegalClassFormatException {
 
-        if (classBeingRedefined != null) {
-            return null;
+        if (debug.equals("true")) {
+            System.err.println("before filter -- className debug:" + className);
         }
 
-        // 重定向输出到指定文件
-        String traceFile = "/Users/changfeng/work/code/MTrace/out/artifacts/mtrace/trace.log";
-        redirectOutPut(traceFile);
+        // 一级过滤
+        if (classBeingRedefined != null) return null;
 
-        // 基本过滤
+        // 二级过滤
         if (!filter(loader, className, protectionDomain)) return null;
 
-        //过滤内容
-        ArrayList<String> filterData = new ArrayList();
-        filterData.add("com/intellij/");
-        filterData.add("com/beust/");
-        filterData.add("com/alibaba/");
-        filterData.add("com/aliyun/");
-        filterData.add("com/mysql/");
-        filterData.add("com/google/");
-        filterData.add("com/fasterxml/");
-        filterData.add("com/sun/");
-        filterData.add("com/github/");
-        filterData.add("com/ggj/platform/");
-        filterData.add("sun/");
-        filterData.add("org/");
-        filterData.add("ch/");
-        filterData.add("javassist/");
-        filterData.add("io/");
-        filterData.add("springfox/");
-        filterData.add("redis/");
-        filterData.add("javax/");
-        filterData.add("au/");
-        filterData.add("com/ggj/qa/gts/");
-        filterData.add("java/");
+        // 三级过滤
+        if (filterBySelf(className)) return null;
 
-        for (int i = 0; i < filterData.size(); i++) {
-            if (className.startsWith(filterData.get(i)) || className.contains("$$")) {
-                return null;
-            }
+        try {
+            loader.loadClass("com.ggj.tester.ClassOfInject");
+//            new InjectClassloader().findClass("com.ggj.tester.ClassOfInject");
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
         }
 
-        // 调用字节码插入
-        return callASMTreeApi(classfileBuffer);
-//        return callAsmCoreApi(classfileBuffer);
-
+        // 注入
+        return callAsmCoreApi(classfileBuffer, traceClass, filePath);
     }
 
     /**
@@ -99,11 +81,16 @@ public class ClassTransformer implements ClassFileTransformer {
      * @param classfileBuffer
      * @return
      */
-    private byte[] callAsmCoreApi(byte[] classfileBuffer) {
+    private byte[] callAsmCoreApi(byte[] classfileBuffer, String traceClass, String filePath) {
         ClassReader cr = new ClassReader(classfileBuffer);
         ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
-        ClassVisitor cv = new ClassAdapter(cw);
-        cr.accept(cv, 0);
+        ClassVisitor cv;
+        try {
+            cv = new ClassAdapter(cw, traceClass, filePath);
+            cr.accept(cv, 0);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return cw.toByteArray();
     }
 
@@ -147,22 +134,6 @@ public class ClassTransformer implements ClassFileTransformer {
         return cw.toByteArray();
     }
 
-    /**
-     * 重定向输出
-     *
-     * @param filePath
-     */
-    public void redirectOutPut(String filePath) {
-        try {
-            FileOutputStream fileOutputStream = new FileOutputStream(filePath, true);
-            PrintStream printStream = new PrintStream(fileOutputStream);
-//            System.setOut(printStream);
-            System.setErr(printStream);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
     boolean filter(final ClassLoader loader, final String className, final ProtectionDomain protectionDomain) {
         if (loader == null) {
             if (!inclBootstrapClasses) return false;
@@ -171,6 +142,24 @@ public class ClassTransformer implements ClassFileTransformer {
             if (exclClassloader.matches(loader.getClass().getName())) return false;
         }
         return !className.startsWith(AGENT_PREFIX) && includes.matches(className) && !excludes.matches(className);
+    }
+
+    /**
+     * @param className
+     * @return 返回true需要过滤
+     */
+    static boolean filterBySelf(String className) {
+        if (
+                className.startsWith("com/ggj/") &&
+                        !className.startsWith("com/ggj/qa/") &&
+                        !className.startsWith("com/ggj/tester/") &&
+                        !className.startsWith("com/ggj/platform/") &&
+                        !className.startsWith("com/ggj/business/") &&
+                        !className.contains("$$")
+        ) {
+            return false;
+        }
+        return true;
     }
 
     private boolean hasSourceLocation(final ProtectionDomain protectionDomain) {
