@@ -14,18 +14,8 @@ import java.util.*;
 @Component
 public class LinkTracking {
 
-    public static void main(String[] args) {
-        String fileName = "/Users/changfeng/work/traceLogs/2019-11-21_trade-service-consign-test_Trace.log";
-        String methodName = "DeliverTimeConfigDO.setIsDeleted";
-        LinkTracking linkTracking = new LinkTracking();
-        linkTracking.getMethodLinkTrace(fileName,methodName,"","","");
-    }
-
     public ArrayList<String> getTargetData(String fileName, String methodName, String threadId, String startTime, String endTime) {
-        long start = System.currentTimeMillis();
-        System.out.println("start:" + start);
         ArrayList<String> dataList = new ArrayList();
-
         try (BufferedReader reader = new BufferedReader(new FileReader(fileName), 500 * 1024)) {
             String linkTraceData = reader.readLine();
             while (linkTraceData != null) {
@@ -58,11 +48,10 @@ public class LinkTracking {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        System.out.println("耗时：" + (System.currentTimeMillis() - start));
         return dataList;
     }
 
-    public HashMap<String, String> getThreadLinkTrace_new(ArrayList<String> data) {
+    public HashMap<String, String> getThreadData(ArrayList<String> data) {
         HashMap<String, String> targetData = new HashMap<>();
         for (int i = 0; i < data.size(); i++) {
             String tempData = data.get(i);
@@ -78,18 +67,14 @@ public class LinkTracking {
 
     // 清洗方法
     public HashMap<String, String> getMethodLinkTrace(String fileName, String methodName, String threadId, String inputStartTime, String inputEndTime) {
-        long start_getMethodLinkTrace = System.currentTimeMillis();
-        System.out.println("start_getMethodLinkTrace:" + start_getMethodLinkTrace);
-
         ArrayList<String> targetData = getTargetData(fileName, methodName, threadId, inputStartTime, inputEndTime);
-        HashMap<String, String> traceData = getThreadLinkTrace_new(targetData);
+        HashMap<String, String> traceData = getThreadData(targetData);
         Iterator<Map.Entry<String, String>> iterator = traceData.entrySet().iterator();
         HashMap<String, String> methodLinkTrace = new HashMap<>();
 
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
         long startTime = 0;
         long endTime = 0;
-
         while (iterator.hasNext()) {
             Map.Entry<String, String> next = iterator.next();
             String key = next.getKey();
@@ -142,8 +127,6 @@ public class LinkTracking {
             }
             methodLinkTrace.put(key, value.toString());
         }
-        long end_getMethodLinkTrace = System.currentTimeMillis();
-        System.out.println("耗时：" + (end_getMethodLinkTrace - start_getMethodLinkTrace));
         return methodLinkTrace;
     }
 
@@ -174,93 +157,14 @@ public class LinkTracking {
             }
 
             targetDate = dateFormat.parse(targetTime).getTime();
-
             if ((targetDate - startDate) >= 0 && (endDate - targetDate) >= 0) {
                 return true;
             } else {
                 return false;
             }
-
         } catch (ParseException e) {
             e.printStackTrace();
             return true;
         }
     }
-
-    //清洗线程
-    public HashMap<String, String> getThreadLinkTrace_old(String fileName, String threadId, String startTime, String endTime) {
-        long start_getThreadLinkTrace = System.currentTimeMillis();
-        System.out.println("start_getThreadLinkTrace:" + start_getThreadLinkTrace);
-
-        HashMap<String, String> traceMap = new HashMap<>();
-
-        try (BufferedReader reader = new BufferedReader(new FileReader(new File(fileName)), 500 * 1024)) {
-            String linkTraceData = reader.readLine();
-            while (linkTraceData != null) {
-                String[] splitTraceData = linkTraceData.split(",");
-                if (isInTime(startTime, endTime, splitTraceData[0]) && (splitTraceData[1].equals("ThreadId=" + threadId) || threadId == null || threadId.length() == 0)) {
-                    if (traceMap.get(splitTraceData[1]) == null) {
-                        traceMap.put(splitTraceData[1], linkTraceData);
-                    } else {
-                        traceMap.put(splitTraceData[1], traceMap.get(splitTraceData[1]) + "<br>" + linkTraceData);
-                    }
-                }
-                linkTraceData = reader.readLine();
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        long end_getThreadLinkTrace = System.currentTimeMillis();
-        System.out.println("耗时：" + (end_getThreadLinkTrace - start_getThreadLinkTrace));
-
-        return traceMap;
-    }
-
-    //清洗线程-分割文件
-    public void splitFileByThreadId(String fileName) {
-        long start_getThreadLinkTrace = System.currentTimeMillis();
-        System.out.println("start_getThreadLinkTrace:" + start_getThreadLinkTrace);
-
-        try (BufferedReader reader = new BufferedReader(new FileReader(new File(fileName)), 500 * 1024)) {
-            String linkTraceData = reader.readLine();
-            while (linkTraceData != null) {
-                String data = null;
-                String sonTraceFile = null;
-                if (linkTraceData.contains(", Call=")) {
-                    data = linkTraceData.substring(linkTraceData.lastIndexOf("ThreadId=") + 9, linkTraceData.lastIndexOf(", Call="));
-                    sonTraceFile = fileName.replace(".log", "_" + data + "T.log");
-                    writeContent(sonTraceFile, linkTraceData);
-                } else {
-                    if (data == null) {
-                        data = linkTraceData.substring(linkTraceData.lastIndexOf("ThreadId=") + 9, linkTraceData.lastIndexOf(", Return="));
-                        sonTraceFile = fileName.replace(".log", "_" + data + "T.log");
-                    }
-                    writeContent(sonTraceFile, linkTraceData);
-                }
-                linkTraceData = reader.readLine();
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        System.out.println("耗时：" + (System.currentTimeMillis() - start_getThreadLinkTrace));
-    }
-
-    /**
-     * 向文件中写入内容
-     *
-     * @param fileName
-     * @param content
-     * @author 慕一
-     */
-    private static void writeContent(String fileName, String content) {
-        try (FileWriter fw = new FileWriter(fileName, true)) {
-            fw.write(content + "\n");
-        } catch (Exception e) {
-            System.out.println("文件写入失败！");
-            e.printStackTrace();
-        }
-    }
-
 }
