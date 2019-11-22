@@ -18,30 +18,39 @@ public class LinkTracking {
         String fileName = "/Users/changfeng/work/traceLogs/2019-11-21_trade-service-consign-test_Trace.log";
         String methodName = "DeliverTimeConfigDO.setIsDeleted";
         LinkTracking linkTracking = new LinkTracking();
-        linkTracking.getMethodLinkTrace(fileName,methodName,"","","");
+        linkTracking.getMethodLinkTrace(fileName, methodName, "", "", "");
     }
 
     public ArrayList<String> getTargetData(String fileName, String methodName, String threadId, String startTime, String endTime) {
-        long start = System.currentTimeMillis();
-        System.out.println("start:" + start);
         ArrayList<String> dataList = new ArrayList();
-
         try (BufferedReader reader = new BufferedReader(new FileReader(fileName), 500 * 1024)) {
             String linkTraceData = reader.readLine();
             while (linkTraceData != null) {
-                if (linkTraceData.contains(methodName) && linkTraceData.contains("Call=") && isInTime(startTime, endTime, linkTraceData.substring(0, linkTraceData.lastIndexOf(", ThreadId=")))) {
+                if (linkTraceData.endsWith(methodName) && linkTraceData.contains("Call=") && isInTime(startTime, endTime, linkTraceData.substring(0, linkTraceData.lastIndexOf(", ThreadId=")))) {
                     dataList.add(linkTraceData);
-                    String linkTraceData_Target = reader.readLine();
                     String start_subString = linkTraceData.substring(linkTraceData.lastIndexOf("ThreadId="));
-                    int countNum = 1;
+                    String linkTraceData_Target = reader.readLine();
+                    int countNum = 1; //call
                     int findNum = 0;
                     boolean flag = true;
                     while (flag) {
                         String target_substring = linkTraceData_Target.substring(linkTraceData_Target.lastIndexOf("ThreadId="));
+                        if (target_substring.contains("Return=")) {
+                            if (target_substring.replace("Return=", "Call=").equals(start_subString)) {
+                                findNum++;
+                                dataList.add(linkTraceData_Target);
+                            }
+                        }
+
+                        if (target_substring.contains("Call=")) {
+                            dataList.add(linkTraceData_Target);
+                        }
+
                         if (target_substring.replace("Return=", "Call=").equals(start_subString)) {
                             findNum++;
                             dataList.add(linkTraceData_Target);
-                        } else if (target_substring.equals(start_subString)) {
+                        }
+                        else if (target_substring.equals(start_subString)) {
                             countNum++;
                             dataList.add(linkTraceData_Target);
                         } else {
@@ -58,11 +67,10 @@ public class LinkTracking {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        System.out.println("耗时：" + (System.currentTimeMillis() - start));
         return dataList;
     }
 
-    public HashMap<String, String> getThreadLinkTrace_new(ArrayList<String> data) {
+    public HashMap<String, String> getThreadData(ArrayList<String> data) {
         HashMap<String, String> targetData = new HashMap<>();
         for (int i = 0; i < data.size(); i++) {
             String tempData = data.get(i);
@@ -78,11 +86,8 @@ public class LinkTracking {
 
     // 清洗方法
     public HashMap<String, String> getMethodLinkTrace(String fileName, String methodName, String threadId, String inputStartTime, String inputEndTime) {
-        long start_getMethodLinkTrace = System.currentTimeMillis();
-        System.out.println("start_getMethodLinkTrace:" + start_getMethodLinkTrace);
-
         ArrayList<String> targetData = getTargetData(fileName, methodName, threadId, inputStartTime, inputEndTime);
-        HashMap<String, String> traceData = getThreadLinkTrace_new(targetData);
+        HashMap<String, String> traceData = getThreadData(targetData);
         Iterator<Map.Entry<String, String>> iterator = traceData.entrySet().iterator();
         HashMap<String, String> methodLinkTrace = new HashMap<>();
 
@@ -142,8 +147,6 @@ public class LinkTracking {
             }
             methodLinkTrace.put(key, value.toString());
         }
-        long end_getMethodLinkTrace = System.currentTimeMillis();
-        System.out.println("耗时：" + (end_getMethodLinkTrace - start_getMethodLinkTrace));
         return methodLinkTrace;
     }
 
@@ -186,5 +189,5 @@ public class LinkTracking {
             return true;
         }
     }
-    
+
 }

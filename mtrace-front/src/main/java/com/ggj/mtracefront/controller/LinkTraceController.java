@@ -28,6 +28,7 @@ public class LinkTraceController {
     @PostMapping(value = "/api/linkTrace", produces = "application/json; charset=UTF-8")
     @ResponseBody
     public Result getLinkTraceData(@Valid @RequestBody LinkTrackingVO linkTrackingVO, BindingResult bindingResult) {
+        long start = System.currentTimeMillis();
         if (bindingResult.hasErrors()) {
             String message = String.format("", bindingResult.getFieldError().getDefaultMessage());
             return ResultFactory.buildFailResult(message);
@@ -35,7 +36,7 @@ public class LinkTraceController {
 
         String methodName = linkTrackingVO.getMethodName();
 
-        if (methodName==null || methodName.length()==0){
+        if (methodName == null || methodName.length() == 0) {
             return ResultFactory.buildFailResult("方法名称不能空");
         }
 
@@ -66,6 +67,7 @@ public class LinkTraceController {
                 }
             }
         }
+        System.out.println("耗时：" + (System.currentTimeMillis() - start));
         return ResultFactory.buildSuccessResult(traceLinks);
     }
 
