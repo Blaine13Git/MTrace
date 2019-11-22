@@ -44,10 +44,8 @@ public class LinkTraceController {
         String endTime = linkTrackingVO.getEndTime();
 
         fileList = new ArrayList<>();
-        ArrayList<HashMap<String, String>> traceLinks = new ArrayList<>();
-
         getFiles(new File(filePath));
-
+        ArrayList<HashMap<String, String>> traceLinks = new ArrayList<>();
         int id = 1;
         for (String fileName : fileList) {
             HashMap<String, String> methodLinkTrace = linkTracking.getMethodLinkTrace(fileName, methodName, threadId, startTime, endTime);
