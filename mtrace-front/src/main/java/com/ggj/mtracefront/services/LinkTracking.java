@@ -14,33 +14,45 @@ import java.util.*;
 @Component
 public class LinkTracking {
 
+    // 获取目标数据
     public ArrayList<String> getTargetData(String fileName, String methodName, String threadId, String startTime, String endTime) {
         ArrayList<String> dataList = new ArrayList();
         try (BufferedReader reader = new BufferedReader(new FileReader(fileName), 500 * 1024)) {
             String linkTraceData = reader.readLine();
+            int index = linkTraceData.lastIndexOf("ThreadId=");
             while (linkTraceData != null) {
-                if (linkTraceData.contains(methodName) && linkTraceData.contains("Call=") && isInTime(startTime, endTime, linkTraceData.substring(0, linkTraceData.lastIndexOf(", ThreadId=")))) {
+                if (
+                        linkTraceData.contains(methodName) &&
+                                linkTraceData.contains("Call=") &&
+                                isInTime(startTime, endTime, linkTraceData.substring(0, linkTraceData.lastIndexOf(", ThreadId="))) &&
+                                (linkTraceData.substring((index + 9), linkTraceData.lastIndexOf(", ")).equals(threadId) || threadId == null || threadId.length() == 0)
+                ) {
                     dataList.add(linkTraceData);
                     String linkTraceData_Target = reader.readLine();
-                    String start_subString = linkTraceData.substring(linkTraceData.lastIndexOf("ThreadId="));
+                    String start_subString = linkTraceData.substring(index);
                     int countNum = 1;
                     int findNum = 0;
                     boolean flag = true;
                     while (flag) {
-                        String target_substring = linkTraceData_Target.substring(linkTraceData_Target.lastIndexOf("ThreadId="));
-                        if (target_substring.replace("Return=", "Call=").equals(start_subString)) {
-                            findNum++;
-                            dataList.add(linkTraceData_Target);
-                        } else if (target_substring.equals(start_subString)) {
-                            countNum++;
-                            dataList.add(linkTraceData_Target);
-                        } else {
-                            dataList.add(linkTraceData_Target);
-                        }
-                        if (countNum == findNum) {
-                            flag = false;
+                        if ((linkTraceData_Target.substring((index + 9), linkTraceData_Target.lastIndexOf(", ")).equals(threadId) || threadId == null || threadId.length() == 0)) {
+                            String target_substring = linkTraceData_Target.substring(linkTraceData_Target.lastIndexOf("ThreadId="));
+                            if (target_substring.replace("Return=", "Call=").equals(start_subString)) {
+                                findNum++;
+                                dataList.add(linkTraceData_Target);
+                            } else if (target_substring.equals(start_subString)) {
+                                countNum++;
+                                dataList.add(linkTraceData_Target);
+                            } else {
+                                dataList.add(linkTraceData_Target);
+                            }
+                            if (countNum == findNum) {
+                                flag = false;
+                            }
                         }
                         linkTraceData_Target = reader.readLine();
+                        if (linkTraceData_Target == null || linkTraceData_Target.length() == 0) {
+                            flag = false;
+                        }
                     }
                 }
                 linkTraceData = reader.readLine();
@@ -51,6 +63,7 @@ public class LinkTracking {
         return dataList;
     }
 
+    // 获取线程数据
     public HashMap<String, String> getThreadData(ArrayList<String> data) {
         HashMap<String, String> targetData = new HashMap<>();
         for (int i = 0; i < data.size(); i++) {
