@@ -39,6 +39,7 @@ public class ClassOfInject {
         } else {
             fileName = filePath + "/" + today + "_" + projectName + "_Trace.log";
         }
+
         writeContent(fileName, now + ", ThreadId=" + id + ", Call=" + className + "." + methodName);
     }
 
