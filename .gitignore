@@ -34,3 +34,4 @@ TestMain.java
 *.log
 out/
 
+MainTest.*
