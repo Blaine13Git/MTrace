@@ -14,9 +14,12 @@ public class MethodAdapterInjectClass extends MethodVisitor implements Opcodes {
     @Override
     public void visitCode() {
         mv.visitCode();
-        mv.visitMethodInsn(INVOKESTATIC, "com/ggj/tester/ClassOfInject", "getInstance", "()Lcom/ggj/tester/ClassOfInject;", false);
-        mv.visitLdcInsn(filePath);
-        mv.visitMethodInsn(INVOKEVIRTUAL, "com/ggj/tester/ClassOfInject", "linkTrackingCall", "(Ljava/lang/String;)V", false);
+        mv.visitTypeInsn(NEW, "com/ggj/tester/TraceLogger");
+        mv.visitInsn(DUP);
+        mv.visitMethodInsn(INVOKESPECIAL, "com/ggj/tester/TraceLogger", "<init>", "()V", false);
+        mv.visitLdcInsn("/Users/changfeng/work/traceLogs");
+        mv.visitMethodInsn(INVOKEVIRTUAL, "com/ggj/tester/TraceLogger", "trace", "(Ljava/lang/String;)V", false);
+
     }
 
     @Override
