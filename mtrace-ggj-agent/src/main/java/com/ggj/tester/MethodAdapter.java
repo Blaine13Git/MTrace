@@ -17,53 +17,12 @@ public class MethodAdapter extends MethodVisitor implements Opcodes {
 
             // System.err.println("thread id = " + Thread.currentThread().getId() + ",call method = " + owner + "." + name);
             mv.visitFieldInsn(GETSTATIC, "java/lang/System", "err", "Ljava/io/PrintStream;");
-            mv.visitTypeInsn(NEW, "java/lang/StringBuilder");
-            mv.visitInsn(DUP);
-            mv.visitMethodInsn(INVOKESPECIAL, "java/lang/StringBuilder", "<init>", "()V", false);
-            mv.visitTypeInsn(NEW, "java/text/SimpleDateFormat");
-            mv.visitInsn(DUP);
-            mv.visitLdcInsn("yyyy-MM-dd HH:mm:ss.SSS");
-            mv.visitMethodInsn(INVOKESPECIAL, "java/text/SimpleDateFormat", "<init>", "(Ljava/lang/String;)V", false);
-            mv.visitTypeInsn(NEW, "java/util/Date");
-            mv.visitInsn(DUP);
-            mv.visitMethodInsn(INVOKESPECIAL, "java/util/Date", "<init>", "()V", false);
-            mv.visitMethodInsn(INVOKEVIRTUAL, "java/text/SimpleDateFormat", "format", "(Ljava/util/Date;)Ljava/lang/String;", false);
-            mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/StringBuilder", "append", "(Ljava/lang/String;)Ljava/lang/StringBuilder;", false);
-            mv.visitLdcInsn(", threadId=");
-            mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/StringBuilder", "append", "(Ljava/lang/String;)Ljava/lang/StringBuilder;", false);
-            mv.visitMethodInsn(INVOKESTATIC, "java/lang/Thread", "currentThread", "()Ljava/lang/Thread;", false);
-            mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Thread", "getId", "()J", false);
-            mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/StringBuilder", "append", "(J)Ljava/lang/StringBuilder;", false);
-            mv.visitLdcInsn(", call=" + owner + "." + name);
-            mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/StringBuilder", "append", "(Ljava/lang/String;)Ljava/lang/StringBuilder;", false);
-            mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/StringBuilder", "toString", "()Ljava/lang/String;", false);
+            mv.visitLdcInsn("call=" + owner + "." + name);
             mv.visitMethodInsn(INVOKEVIRTUAL, "java/io/PrintStream", "println", "(Ljava/lang/String;)V", false);
 
             // 方法调用
             mv.visitMethodInsn(opcode, owner, name, descriptor, isInterface);
-
-            mv.visitFieldInsn(GETSTATIC, "java/lang/System", "err", "Ljava/io/PrintStream;");
-            mv.visitTypeInsn(NEW, "java/lang/StringBuilder");
-            mv.visitInsn(DUP);
-            mv.visitMethodInsn(INVOKESPECIAL, "java/lang/StringBuilder", "<init>", "()V", false);
-            mv.visitTypeInsn(NEW, "java/text/SimpleDateFormat");
-            mv.visitInsn(DUP);
-            mv.visitLdcInsn("yyyy-MM-dd HH:mm:ss.SSS");
-            mv.visitMethodInsn(INVOKESPECIAL, "java/text/SimpleDateFormat", "<init>", "(Ljava/lang/String;)V", false);
-            mv.visitTypeInsn(NEW, "java/util/Date");
-            mv.visitInsn(DUP);
-            mv.visitMethodInsn(INVOKESPECIAL, "java/util/Date", "<init>", "()V", false);
-            mv.visitMethodInsn(INVOKEVIRTUAL, "java/text/SimpleDateFormat", "format", "(Ljava/util/Date;)Ljava/lang/String;", false);
-            mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/StringBuilder", "append", "(Ljava/lang/String;)Ljava/lang/StringBuilder;", false);
-            mv.visitLdcInsn(", threadId=");
-            mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/StringBuilder", "append", "(Ljava/lang/String;)Ljava/lang/StringBuilder;", false);
-            mv.visitMethodInsn(INVOKESTATIC, "java/lang/Thread", "currentThread", "()Ljava/lang/Thread;", false);
-            mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Thread", "getId", "()J", false);
-            mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/StringBuilder", "append", "(J)Ljava/lang/StringBuilder;", false);
-            mv.visitLdcInsn(", return=" + owner + "." + name);
-            mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/StringBuilder", "append", "(Ljava/lang/String;)Ljava/lang/StringBuilder;", false);
-            mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/StringBuilder", "toString", "()Ljava/lang/String;", false);
-            mv.visitMethodInsn(INVOKEVIRTUAL, "java/io/PrintStream", "println", "(Ljava/lang/String;)V", false);
+            System.out.println("return=" + owner + "." + name);
 
         } else {
             mv.visitMethodInsn(opcode, owner, name, descriptor, isInterface);

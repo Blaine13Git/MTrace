@@ -26,10 +26,10 @@ public class MTAgent {
         // 重定向输出到指定文件
         if (null == traceFilePath || traceFilePath.length() == 0) {
             String traceFile = projectPath + "/" + formatDate + "_" + projectName + "_Trace.log";
-            redirectOutPut(traceFile);
+//            redirectOutPut(traceFile);
         } else {
             String traceFile = traceFilePath + "/" + formatDate + "_" + projectName + "_Trace.log";
-            redirectOutPut(traceFile);
+//            redirectOutPut(traceFile);
         }
 
         //向instrumentation中添加一个类的转换器,用于转换类的行为.
