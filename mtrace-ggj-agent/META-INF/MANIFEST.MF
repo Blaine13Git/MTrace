@@ -1,5 +1,5 @@
 Manifest-Version: 1.0
-Premain-Class: com.ggj.tester.MTAgent
+Agent-Class: com.ggj.tester.MTAgent
 Can-Redefine-Classes: true
 Can-Retransform-Classes: true
 Class-Path: asm-7.2.jar

@@ -1,17 +1,27 @@
 package com.ggj.tester;
 
 import java.lang.instrument.Instrumentation;
-import java.text.SimpleDateFormat;
 
 /**
  * @author muyi
  */
 public class MTAgent {
 
-    public static void premain(final String options, final Instrumentation instrumentation) {
+    public static void agentmain(final String options, Instrumentation instrumentation) {
         final AgentOptions agentOptions = new AgentOptions(options);
-        System.out.println("<<<<<<<<<<<<<<<<<<<<<MT>>>>>>>>>>>>>>>>>>>>>>");
-        //向instrumentation中添加一个类的转换器,用于转换类的行为.
-        instrumentation.addTransformer(new ClassTransformer(agentOptions));
+        instrumentation.addTransformer(new ClassTransformer(agentOptions), true);
+
+        try {
+            Class[] allLoadedClasses = instrumentation.getAllLoadedClasses();
+
+            for (int i = 0; i < allLoadedClasses.length; i++) {
+                instrumentation.retransformClasses(allLoadedClasses[i]);
+            }
+
+            System.out.println("Agent Load Done.");
+        } catch (Exception e) {
+            System.out.println("agent load failed!");
+            e.printStackTrace();
+        }
     }
 }
