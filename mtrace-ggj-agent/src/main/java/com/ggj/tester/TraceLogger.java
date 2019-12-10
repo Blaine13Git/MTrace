@@ -18,7 +18,6 @@ public class TraceLogger implements Logger {
 
     @Override
     public void warn(String s) {
-        linkTrackingReturn(s);
 
     }
 
@@ -34,7 +33,7 @@ public class TraceLogger implements Logger {
 
     @Override
     public void trace(String s) {
-        linkTrackingCall(s);
+//        linkTrackingCall(s);
     }
 
     @Override
