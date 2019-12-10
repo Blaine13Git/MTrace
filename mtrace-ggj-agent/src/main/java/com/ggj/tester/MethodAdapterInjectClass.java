@@ -15,17 +15,17 @@ public class MethodAdapterInjectClass extends MethodVisitor implements Opcodes {
     public void visitCode() {
         System.out.println("<<<<<<<<<<<<<<<<<<<<<MT-MethodAdapter>>>>>>>>>>>>>>>>>>>>>>");
         mv.visitCode();
-        mv.visitMethodInsn(INVOKESTATIC, "com/ggj/tester/ClassOfInject", "getInstance", "()Lcom/ggj/tester/ClassOfInject;", false);
+        mv.visitMethodInsn(INVOKESTATIC, "com/ggj/tester/ClassOfInjectDirect", "getInstance", "()Lcom/ggj/tester/ClassOfInjectDirect;", false);
         mv.visitLdcInsn(filePath);
-        mv.visitMethodInsn(INVOKEVIRTUAL, "com/ggj/tester/ClassOfInject", "linkTrackingCall", "(Ljava/lang/String;)V", false);
+        mv.visitMethodInsn(INVOKEVIRTUAL, "com/ggj/tester/ClassOfInjectDirect", "linkTrackingCall", "(Ljava/lang/String;)V", false);
     }
 
     @Override
     public void visitInsn(int opcode) {
         if ((opcode >= IRETURN && opcode <= RETURN) || opcode == ATHROW) {
-            mv.visitMethodInsn(INVOKESTATIC, "com/ggj/tester/ClassOfInject", "getInstance", "()Lcom/ggj/tester/ClassOfInject;", false);
+            mv.visitMethodInsn(INVOKESTATIC, "com/ggj/tester/ClassOfInjectDirect", "getInstance", "()Lcom/ggj/tester/ClassOfInjectDirect;", false);
             mv.visitLdcInsn(filePath);
-            mv.visitMethodInsn(INVOKEVIRTUAL, "com/ggj/tester/ClassOfInject", "linkTrackingReturn", "(Ljava/lang/String;)V", false);
+            mv.visitMethodInsn(INVOKEVIRTUAL, "com/ggj/tester/ClassOfInjectDirect", "linkTrackingReturn", "(Ljava/lang/String;)V", false);
         }
         mv.visitInsn(opcode);
     }

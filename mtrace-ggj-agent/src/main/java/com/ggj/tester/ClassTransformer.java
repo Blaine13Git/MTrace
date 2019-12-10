@@ -65,8 +65,8 @@ public class ClassTransformer implements ClassFileTransformer {
         if (filterBySelf(className)) return null;
 
         try {
-            loader.loadClass("com.ggj.tester.ClassOfInject");
-//            new InjectClassloader().findClass("com.ggj.tester.ClassOfInject");
+            loader.loadClass("com.ggj.tester.ClassOfInjectDirect");
+//            new InjectClassloader().findClass("com.ggj.tester.ClassOfInjectDirect");
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }

@@ -4,14 +4,14 @@ import java.io.FileWriter;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-public class ClassOfInject {
+public class ClassOfInjectDirect {
     private String fileName;
-    private static ClassOfInject classOfInject;
+    private static ClassOfInjectDirect classOfInject;
     private SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
 
-    public static ClassOfInject getInstance() {
+    public static ClassOfInjectDirect getInstance() {
         if (classOfInject == null) {
-            return classOfInject = new ClassOfInject();
+            return classOfInject = new ClassOfInjectDirect();
         } else {
             return classOfInject;
         }

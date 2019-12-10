@@ -12,13 +12,13 @@ public class InjectClassloader extends ClassLoader {
 
     @Override
     protected Class<?> findClass(String name) throws ClassNotFoundException {
-        if (name.endsWith("ClassOfInject")) {
+        if (name.endsWith("ClassOfInjectDirect")) {
             ClassWriter cw = new ClassWriter(0);
             FieldVisitor fv;
             MethodVisitor mv;
             AnnotationVisitor av0;
 
-            cw.visit(52, ACC_PUBLIC + ACC_SUPER, "com/ggj/tester/ClassOfInject", null, "java/lang/Object", null);
+            cw.visit(52, ACC_PUBLIC + ACC_SUPER, "com/ggj/tester/ClassOfInjectDirect", null, "java/lang/Object", null);
 
             {
                 fv = cw.visitField(ACC_PRIVATE, "simpleDateFormat", "Ljava/text/SimpleDateFormat;", null, null);
@@ -26,7 +26,7 @@ public class InjectClassloader extends ClassLoader {
             }
 
             {
-                fv = cw.visitField(ACC_PRIVATE + ACC_STATIC, "classOfInject", "Lcom/ggj/tester/ClassOfInject;", null, null);
+                fv = cw.visitField(ACC_PRIVATE + ACC_STATIC, "classOfInject", "Lcom/ggj/tester/ClassOfInjectDirect;", null, null);
                 fv.visitEnd();
             }
 
@@ -40,27 +40,27 @@ public class InjectClassloader extends ClassLoader {
                 mv.visitInsn(DUP);
                 mv.visitLdcInsn("yyyy-MM-dd HH:mm:ss.SSS");
                 mv.visitMethodInsn(INVOKESPECIAL, "java/text/SimpleDateFormat", "<init>", "(Ljava/lang/String;)V", false);
-                mv.visitFieldInsn(PUTFIELD, "com/ggj/tester/ClassOfInject", "simpleDateFormat", "Ljava/text/SimpleDateFormat;");
+                mv.visitFieldInsn(PUTFIELD, "com/ggj/tester/ClassOfInjectDirect", "simpleDateFormat", "Ljava/text/SimpleDateFormat;");
                 mv.visitInsn(RETURN);
                 mv.visitMaxs(4, 1);
                 mv.visitEnd();
             }
 
             {
-                mv = cw.visitMethod(ACC_PUBLIC + ACC_STATIC, "getInstance", "()Lcom/ggj/tester/ClassOfInject;", null, null);
+                mv = cw.visitMethod(ACC_PUBLIC + ACC_STATIC, "getInstance", "()Lcom/ggj/tester/ClassOfInjectDirect;", null, null);
                 mv.visitCode();
-                mv.visitFieldInsn(GETSTATIC, "com/ggj/tester/ClassOfInject", "classOfInject", "Lcom/ggj/tester/ClassOfInject;");
+                mv.visitFieldInsn(GETSTATIC, "com/ggj/tester/ClassOfInjectDirect", "classOfInject", "Lcom/ggj/tester/ClassOfInjectDirect;");
                 Label l0 = new Label();
                 mv.visitJumpInsn(IFNONNULL, l0);
-                mv.visitTypeInsn(NEW, "com/ggj/tester/ClassOfInject");
+                mv.visitTypeInsn(NEW, "com/ggj/tester/ClassOfInjectDirect");
                 mv.visitInsn(DUP);
-                mv.visitMethodInsn(INVOKESPECIAL, "com/ggj/tester/ClassOfInject", "<init>", "()V", false);
+                mv.visitMethodInsn(INVOKESPECIAL, "com/ggj/tester/ClassOfInjectDirect", "<init>", "()V", false);
                 mv.visitInsn(DUP);
-                mv.visitFieldInsn(PUTSTATIC, "com/ggj/tester/ClassOfInject", "classOfInject", "Lcom/ggj/tester/ClassOfInject;");
+                mv.visitFieldInsn(PUTSTATIC, "com/ggj/tester/ClassOfInjectDirect", "classOfInject", "Lcom/ggj/tester/ClassOfInjectDirect;");
                 mv.visitInsn(ARETURN);
                 mv.visitLabel(l0);
                 mv.visitFrame(Opcodes.F_SAME, 0, null, 0, null);
-                mv.visitFieldInsn(GETSTATIC, "com/ggj/tester/ClassOfInject", "classOfInject", "Lcom/ggj/tester/ClassOfInject;");
+                mv.visitFieldInsn(GETSTATIC, "com/ggj/tester/ClassOfInjectDirect", "classOfInject", "Lcom/ggj/tester/ClassOfInjectDirect;");
                 mv.visitInsn(ARETURN);
                 mv.visitMaxs(2, 0);
                 mv.visitEnd();
@@ -86,7 +86,7 @@ public class InjectClassloader extends ClassLoader {
                 mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Thread", "getId", "()J", false);
                 mv.visitVarInsn(LSTORE, 5);
                 mv.visitVarInsn(ALOAD, 0);
-                mv.visitFieldInsn(GETFIELD, "com/ggj/tester/ClassOfInject", "simpleDateFormat", "Ljava/text/SimpleDateFormat;");
+                mv.visitFieldInsn(GETFIELD, "com/ggj/tester/ClassOfInjectDirect", "simpleDateFormat", "Ljava/text/SimpleDateFormat;");
                 mv.visitTypeInsn(NEW, "java/util/Date");
                 mv.visitInsn(DUP);
                 mv.visitMethodInsn(INVOKESPECIAL, "java/util/Date", "<init>", "()V", false);
@@ -113,7 +113,7 @@ public class InjectClassloader extends ClassLoader {
                 mv.visitVarInsn(ALOAD, 4);
                 mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/StringBuilder", "append", "(Ljava/lang/String;)Ljava/lang/StringBuilder;", false);
                 mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/StringBuilder", "toString", "()Ljava/lang/String;", false);
-                mv.visitMethodInsn(INVOKESTATIC, "com/ggj/tester/ClassOfInject", "writeContent", "(Ljava/lang/String;Ljava/lang/String;)V", false);
+                mv.visitMethodInsn(INVOKESTATIC, "com/ggj/tester/ClassOfInjectDirect", "writeContent", "(Ljava/lang/String;Ljava/lang/String;)V", false);
                 mv.visitInsn(RETURN);
                 mv.visitMaxs(4, 8);
                 mv.visitEnd();
@@ -139,7 +139,7 @@ public class InjectClassloader extends ClassLoader {
                 mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Thread", "getId", "()J", false);
                 mv.visitVarInsn(LSTORE, 5);
                 mv.visitVarInsn(ALOAD, 0);
-                mv.visitFieldInsn(GETFIELD, "com/ggj/tester/ClassOfInject", "simpleDateFormat", "Ljava/text/SimpleDateFormat;");
+                mv.visitFieldInsn(GETFIELD, "com/ggj/tester/ClassOfInjectDirect", "simpleDateFormat", "Ljava/text/SimpleDateFormat;");
                 mv.visitTypeInsn(NEW, "java/util/Date");
                 mv.visitInsn(DUP);
                 mv.visitMethodInsn(INVOKESPECIAL, "java/util/Date", "<init>", "()V", false);
@@ -166,7 +166,7 @@ public class InjectClassloader extends ClassLoader {
                 mv.visitVarInsn(ALOAD, 4);
                 mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/StringBuilder", "append", "(Ljava/lang/String;)Ljava/lang/StringBuilder;", false);
                 mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/StringBuilder", "toString", "()Ljava/lang/String;", false);
-                mv.visitMethodInsn(INVOKESTATIC, "com/ggj/tester/ClassOfInject", "writeContent", "(Ljava/lang/String;Ljava/lang/String;)V", false);
+                mv.visitMethodInsn(INVOKESTATIC, "com/ggj/tester/ClassOfInjectDirect", "writeContent", "(Ljava/lang/String;Ljava/lang/String;)V", false);
                 mv.visitInsn(RETURN);
                 mv.visitMaxs(4, 8);
                 mv.visitEnd();
