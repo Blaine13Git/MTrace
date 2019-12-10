@@ -72,7 +72,7 @@ public class ClassTransformer implements ClassFileTransformer {
         }
 
         // 注入
-        return callAsmCoreApi(classfileBuffer, traceClass, filePath);
+        return callAsmCoreApi(classfileBuffer, filePath);
     }
 
     /**
@@ -81,13 +81,17 @@ public class ClassTransformer implements ClassFileTransformer {
      * @param classfileBuffer
      * @return
      */
-    private byte[] callAsmCoreApi(byte[] classfileBuffer, String traceClass, String filePath) {
+    private byte[] callAsmCoreApi(byte[] classfileBuffer, String filePath) {
         try {
             System.out.println("<<<<<<<<<<<<<<<<<<<<<MT-Core>>>>>>>>>>>>>>>>>>>>>>");
             ClassReader cr = new ClassReader(classfileBuffer);
+            System.out.println("<<<<<<<<<<<<<<<<<<<<<MT-Core-step01>>>>>>>>>>>>>>>>>>>>>>");
             ClassWriter cw = new ClassWriter(cr, 0);
+            System.out.println("<<<<<<<<<<<<<<<<<<<<<MT-Core-step02>>>>>>>>>>>>>>>>>>>>>>");
             ClassAdapter ca = new ClassAdapter(cw, filePath);
+            System.out.println("<<<<<<<<<<<<<<<<<<<<<MT-Core-step03>>>>>>>>>>>>>>>>>>>>>>");
             cr.accept(ca, 0);
+            System.out.println("<<<<<<<<<<<<<<<<<<<<<MT-Core-step04>>>>>>>>>>>>>>>>>>>>>>");
             return cw.toByteArray();
         } catch (Exception e) {
             System.out.println("<<<<<<<<<<<<<<<<<<<<<MT-Error>>>>>>>>>>>>>>>>>>>>>>");

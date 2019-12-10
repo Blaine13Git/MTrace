@@ -1,5 +1,6 @@
 Manifest-Version: 1.0
 Premain-Class: com.ggj.tester.MTAgent
-Created-By: 1.8.0_181
+Can-Redefine-Classes: true
+Can-Retransform-Classes: true
 Class-Path: asm-7.2.jar
     asm-tree-7.2.jar
