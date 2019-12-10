@@ -17,13 +17,16 @@ public class ClassAdapter extends ClassVisitor implements Opcodes {
 
 
     public ClassAdapter(
-            final ClassVisitor cv,
+            ClassVisitor cv,
             String traceClass,
             String filePath
     ) {
         super(ASM7, cv);
         this.traceClass = traceClass;
         this.filePath = filePath;
+
+        System.out.println("<<<<<<<<<<<<<<<<<<<<<MT-Call-ClassAdapter>>>>>>>>>>>>>>>>>>>>>>");
+
     }
 
     @Override
@@ -54,6 +57,8 @@ public class ClassAdapter extends ClassVisitor implements Opcodes {
         MethodVisitor mv = cv.visitMethod(access, name, desc, signature, exceptions);
         methodName = name;
         if (!isInterface && mv != null && !name.equals("<init>") && !name.equals("<clinit>")) {
+            System.out.println("<<<<<<<<<<<<<<<<<<<<<MT-ClassAdapter>>>>>>>>>>>>>>>>>>>>>>");
+
             mv = new MethodAdapterInjectClass(mv, filePath);
         }
         return mv;

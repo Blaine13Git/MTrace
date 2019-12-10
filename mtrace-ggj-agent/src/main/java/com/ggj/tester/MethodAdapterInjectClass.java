@@ -13,6 +13,7 @@ public class MethodAdapterInjectClass extends MethodVisitor implements Opcodes {
 
     @Override
     public void visitCode() {
+        System.out.println("<<<<<<<<<<<<<<<<<<<<<MT-MethodAdapter>>>>>>>>>>>>>>>>>>>>>>");
         mv.visitCode();
         mv.visitMethodInsn(INVOKESTATIC, "com/ggj/tester/ClassOfInject", "getInstance", "()Lcom/ggj/tester/ClassOfInject;", false);
         mv.visitLdcInsn(filePath);

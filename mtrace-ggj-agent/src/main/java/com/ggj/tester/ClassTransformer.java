@@ -82,16 +82,18 @@ public class ClassTransformer implements ClassFileTransformer {
      * @return
      */
     private byte[] callAsmCoreApi(byte[] classfileBuffer, String traceClass, String filePath) {
-        ClassReader cr = new ClassReader(classfileBuffer);
-        ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
-        ClassVisitor cv;
         try {
-            cv = new ClassAdapter(cw, traceClass, filePath);
-            cr.accept(cv, 0);
+            System.out.println("<<<<<<<<<<<<<<<<<<<<<MT-Core>>>>>>>>>>>>>>>>>>>>>>");
+            ClassReader cr = new ClassReader(classfileBuffer);
+            ClassWriter cw = new ClassWriter(cr,0);
+            ClassAdapter ca = new ClassAdapter(cw, traceClass, filePath);
+            cr.accept(ca, 0);
+            return cw.toByteArray();
         } catch (Exception e) {
+            System.out.println("<<<<<<<<<<<<<<<<<<<<<MT-Error>>>>>>>>>>>>>>>>>>>>>>");
             e.printStackTrace();
+            return null;
         }
-        return cw.toByteArray();
     }
 
     /**
