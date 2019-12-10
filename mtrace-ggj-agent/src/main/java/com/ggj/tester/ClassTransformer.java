@@ -1,6 +1,5 @@
 package com.ggj.tester;
 
-import jdk.internal.instrumentation.Logger;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
@@ -41,8 +40,6 @@ public class ClassTransformer implements ClassFileTransformer {
         traceClass = agentOptions.getTraceClass();
         traceMethod = agentOptions.getTraceMethod();
         debug = agentOptions.getDebug();
-
-
     }
 
     @Override
@@ -81,16 +78,16 @@ public class ClassTransformer implements ClassFileTransformer {
      * @return
      */
     private byte[] callAsmCoreApi(byte[] classfileBuffer, String traceClass, String traceMethod) {
-        ClassReader cr = new ClassReader(classfileBuffer);
-        ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
-        ClassVisitor cv;
         try {
-            cv = new ClassAdapter(cw, traceClass, traceMethod);
+            ClassReader cr = new ClassReader(classfileBuffer);
+            ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
+            ClassVisitor cv = new ClassAdapter(cw, traceClass, traceMethod);
             cr.accept(cv, 0);
+            return cw.toByteArray();
         } catch (Exception e) {
             e.printStackTrace();
+            return null;
         }
-        return cw.toByteArray();
     }
 
     /**
@@ -148,49 +145,16 @@ public class ClassTransformer implements ClassFileTransformer {
      * @return 返回true需要过滤
      */
     static boolean filterBySelf(String className) {
-
-        if (className.startsWith("com/ggj/")  && !className.startsWith("com/ggj/qa") && !className.contains("$$")) {
-            // && className.startsWith("com/ggj/platform")
+        if (
+                className.startsWith("com/ggj/") &&
+                        !className.startsWith("com/ggj/qa/") &&
+                        !className.startsWith("com/ggj/tester/") &&
+                        !className.startsWith("com/ggj/platform/") &&
+                        !className.startsWith("com/ggj/business/") &&
+                        !className.contains("$$")
+        ) {
             return false;
         }
-
-//        String[] filterData = new String[28];
-//        filterData[0] = "com/intellij/";
-//        filterData[1] = "com/beust/";
-//        filterData[2] = "com/alibaba/";
-//        filterData[3] = "com/aliyun/";
-//        filterData[4] = "com/mysql/";
-//        filterData[5] = "com/google/";
-//        filterData[6] = "com/fasterxml/";
-//        filterData[7] = "com/sun/";
-//        filterData[8] = "com/github/";
-//        filterData[9] = "com/zaxxer/";
-//        filterData[10] = "sun/";
-//        filterData[11] = "org/";
-//        filterData[12] = "ch/";
-//        filterData[13] = "javassist/";
-//        filterData[14] = "io/";
-//        filterData[15] = "springfox/";
-//        filterData[16] = "redis/";
-//        filterData[17] = "javax/";
-//        filterData[18] = "au/";
-//        filterData[19] = "java/";
-//        filterData[20] = "rx/";
-//        filterData[21] = "net/";
-//        filterData[22] = "junit/";
-//        filterData[23] = "bsh/";
-//        filterData[24] = "tk/";
-//        filterData[25] = "lombok/";
-//        filterData[26] = "lombok/";
-//        filterData[27] = "com/ggj/platform/";
-//        filterData[28] = "com/ggj/qa/";
-//
-//        for (int i = 0; i < filterData.length; i++) {
-//            if (className.startsWith(filterData[i]) || className.contains("$$")) {
-//                return true;
-//            }
-//        }
-
         return true;
     }
 

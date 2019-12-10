@@ -15,6 +15,7 @@ public class MTAgent {
     private static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
     public static void premain(final String options, final Instrumentation instrumentation) {
+        System.out.println("<<<<<<<<<<<<<<<<<<<<<MT>>>>>>>>>>>>>>>>>>>>>>");
         final AgentOptions agentOptions = new AgentOptions(options);
         traceFilePath = agentOptions.getTraceFilePath();
         debug = agentOptions.getDebug();
@@ -47,7 +48,7 @@ public class MTAgent {
             PrintStream printStream = new PrintStream(fileOutputStream);
             System.setErr(printStream);
             if (debug.equals("true")) {
-//                System.setOut(printStream);
+                System.setOut(printStream);
                 System.err.println("begin……");
             }
         } catch (Exception e) {
