@@ -85,8 +85,8 @@ public class ClassTransformer implements ClassFileTransformer {
         try {
             System.out.println("<<<<<<<<<<<<<<<<<<<<<MT-Core>>>>>>>>>>>>>>>>>>>>>>");
             ClassReader cr = new ClassReader(classfileBuffer);
-            ClassWriter cw = new ClassWriter(cr,0);
-            ClassAdapter ca = new ClassAdapter(cw, traceClass, filePath);
+            ClassWriter cw = new ClassWriter(cr, 0);
+            ClassAdapter ca = new ClassAdapter(cw, filePath);
             cr.accept(ca, 0);
             return cw.toByteArray();
         } catch (Exception e) {
