@@ -154,14 +154,13 @@ public class ClassTransformer implements ClassFileTransformer {
      * @param className
      * @return 返回true需要过滤
      */
-    static boolean filterBySelf(String className) {
+    public static boolean filterBySelf(String className) {
         if (
-                className.startsWith("com/ggj/") &&
-                        !className.startsWith("com/ggj/qa/") &&
+                className.startsWith("com/ggj/") && !className.startsWith("com/ggj/qa/") &&
                         !className.startsWith("com/ggj/tester/") &&
                         !className.startsWith("com/ggj/platform/") &&
                         !className.startsWith("com/ggj/business/") &&
-                        !className.contains("$$")
+                        !className.contains("$")
         ) {
             return false;
         }

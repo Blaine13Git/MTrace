@@ -4,6 +4,7 @@ import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
+
 /**
  * 1、检查类是否为接口
  * 2、过滤需要注入的方法
@@ -12,6 +13,7 @@ public class ClassAdapter extends ClassVisitor implements Opcodes {
 
     protected boolean isInterface;
     private String filePath;
+    private String className;
 
     public ClassAdapter(ClassVisitor cv, String filePath) {
         super(ASM7, cv);
@@ -22,6 +24,7 @@ public class ClassAdapter extends ClassVisitor implements Opcodes {
     @Override
     public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
         cv.visit(version, access, name, signature, superName, interfaces);
+        className = name;
         isInterface = (access & Opcodes.ACC_INTERFACE) != 0;
     }
 
@@ -30,11 +33,12 @@ public class ClassAdapter extends ClassVisitor implements Opcodes {
 
         MethodVisitor mv = cv.visitMethod(access, name, descriptor, signature, exceptions);
 
-        if (!isInterface && mv != null && !name.equals("<init>") && !name.equals("<clinit>")) {
+        if (!isInterface && mv != null && !name.equals("<init>") && !name.equals("<clinit>") && !name.contains("$")) {
 
             System.out.println("<<<<<<<<<<<<<<<<<<<<<MT-ClassAdapter>>>>>>>>>>>>>>>>>>>>>>");
 
-            mv = new MethodAdapterInjectClass(mv, filePath);
+//            mv = new MethodAdapterInjectClass(mv, filePath);
+            mv = new MethodAdapter(mv, filePath);
         }
         return mv;
     }

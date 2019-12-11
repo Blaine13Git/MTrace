@@ -13,6 +13,7 @@ public class MethodAdapter extends MethodVisitor implements Opcodes {
 
     @Override
     public void visitMethodInsn(int opcode, String owner, String name, String descriptor, boolean isInterface) {
+        System.out.println("<<<<<<<<<<<<<<<<<<<<<MT-MethodAdapter>>>>>>>>>>>>>>>>>>>>>>");
         if (!ClassTransformer.filterBySelf(owner) && !name.equals("<init>") && !name.equals("clinit") && traceMethod.equals("true")) {
 
             // System.err.println("thread id = " + Thread.currentThread().getId() + ",call method = " + owner + "." + name);
