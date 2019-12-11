@@ -12,21 +12,22 @@ public class MethodAdapterInjectClass extends MethodVisitor implements Opcodes {
     }
 
     @Override
-    public void visitCode() {
-        System.out.println("<<<<<<<<<<<<<<<<<<<<<MT-MethodAdapterInjectClass>>>>>>>>>>>>>>>>>>>>>>");
-        mv.visitCode();
-        mv.visitMethodInsn(INVOKESTATIC, "com/ggj/tester/ClassOfInjectDirect", "getInstance", "()Lcom/ggj/tester/ClassOfInjectDirect;", false);
-        mv.visitLdcInsn(filePath);
-        mv.visitMethodInsn(INVOKEVIRTUAL, "com/ggj/tester/ClassOfInjectDirect", "linkTrackingCall", "(Ljava/lang/String;)V", false);
-    }
+    public void visitMethodInsn(int opcode, String owner, String name, String descriptor, boolean isInterface) {
+        System.out.println("<<<<<<<<<<<<<<<<<<<<<MT-MethodAdapter>>>>>>>>>>>>>>>>>>>>>>");
+        if (!ClassTransformer.filterBySelf(owner) && !name.equals("<init>") && !name.equals("clinit") ) {
+            mv.visitMethodInsn(INVOKESTATIC, "com/ggj/tester/ClassOfInjectDirect", "getInstance", "()Lcom/ggj/tester/ClassOfInjectDirect;", false);
+            mv.visitLdcInsn(filePath);
+            mv.visitMethodInsn(INVOKEVIRTUAL, "com/ggj/tester/ClassOfInjectDirect", "linkTrackingCall", "(Ljava/lang/String;)V", false);
 
-    @Override
-    public void visitInsn(int opcode) {
-        if ((opcode >= IRETURN && opcode <= RETURN) || opcode == ATHROW) {
+            // 方法调用
+            mv.visitMethodInsn(opcode, owner, name, descriptor, isInterface);
+
             mv.visitMethodInsn(INVOKESTATIC, "com/ggj/tester/ClassOfInjectDirect", "getInstance", "()Lcom/ggj/tester/ClassOfInjectDirect;", false);
             mv.visitLdcInsn(filePath);
             mv.visitMethodInsn(INVOKEVIRTUAL, "com/ggj/tester/ClassOfInjectDirect", "linkTrackingReturn", "(Ljava/lang/String;)V", false);
+
+        } else {
+            mv.visitMethodInsn(opcode, owner, name, descriptor, isInterface);
         }
-        mv.visitInsn(opcode);
     }
 }

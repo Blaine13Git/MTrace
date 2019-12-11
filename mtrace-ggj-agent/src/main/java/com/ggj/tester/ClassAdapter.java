@@ -37,8 +37,8 @@ public class ClassAdapter extends ClassVisitor implements Opcodes {
 
             System.out.println("<<<<<<<<<<<<<<<<<<<<<MT-ClassAdapter>>>>>>>>>>>>>>>>>>>>>>");
 
-//            mv = new MethodAdapterInjectClass(mv, filePath);
-            mv = new MethodAdapter(mv, filePath);
+            mv = new MethodAdapterInjectClass(mv, filePath);
+//            mv = new MethodAdapter(mv, filePath);
         }
         return mv;
     }
