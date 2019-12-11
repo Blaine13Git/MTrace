@@ -135,7 +135,7 @@ public final class AgentOptions {
     }
 
     public String getTraceClass() {
-        return getOption(TRACECLASS, "true");
+        return getOption(TRACECLASS, "false");
     }
 
     public void setTraceClass(final String traceClass) {

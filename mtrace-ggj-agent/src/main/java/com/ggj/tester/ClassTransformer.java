@@ -63,6 +63,7 @@ public class ClassTransformer implements ClassFileTransformer {
 
         // 三级过滤
         if (filterBySelf(className)) return null;
+
         if (debug.equals("true")) {
             System.err.println("after filter -- className debug:" + className);
         }
@@ -151,7 +152,7 @@ public class ClassTransformer implements ClassFileTransformer {
                         !className.startsWith("com/ggj/tester/") &&
                         !className.startsWith("com/ggj/platform/") &&
                         !className.startsWith("com/ggj/business/") &&
-                        !className.contains("$$")
+                        !className.contains("$")
         ) {
             return false;
         }
