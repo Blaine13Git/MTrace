@@ -72,7 +72,8 @@ public class ClassTransformer implements ClassFileTransformer {
         }
 
         // 注入
-        return callAsmCoreApi(classfileBuffer, filePath);
+//        return callAsmCoreApi(classfileBuffer, filePath);
+        return callASMTreeApi(classfileBuffer);
     }
 
     /**

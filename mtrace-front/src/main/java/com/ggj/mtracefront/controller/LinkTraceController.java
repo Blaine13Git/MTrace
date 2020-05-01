@@ -25,7 +25,7 @@ public class LinkTraceController {
     @Autowired
     private LinkTracking linkTracking;
 
-    @PostMapping(value = "/api/linkTrace", produces = "application/json; charset=UTF-8")
+    @PostMapping(value = "/linkTracking/searchCallLinking", produces = "application/json; charset=UTF-8")
     @ResponseBody
     public Result getLinkTraceData(@Valid @RequestBody LinkTrackingVO linkTrackingVO, BindingResult bindingResult) {
         long start = System.currentTimeMillis();

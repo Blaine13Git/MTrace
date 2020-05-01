@@ -14,6 +14,9 @@ public class MethodAdapterInjectClass extends MethodVisitor implements Opcodes {
     @Override
     public void visitMethodInsn(int opcode, String owner, String name, String descriptor, boolean isInterface) {
         System.out.println("<<<<<<<<<<<<<<<<<<<<<MT-MethodAdapter>>>>>>>>>>>>>>>>>>>>>>");
+
+
+
         if (!ClassTransformer.filterBySelf(owner) && !name.equals("<init>") && !name.equals("clinit") ) {
             mv.visitMethodInsn(INVOKESTATIC, "com/ggj/tester/ClassOfInjectDirect", "getInstance", "()Lcom/ggj/tester/ClassOfInjectDirect;", false);
             mv.visitLdcInsn(filePath);
